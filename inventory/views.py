@@ -7,17 +7,16 @@ from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView, DetailView
 from django.views.decorators.http import require_http_methods
 from django.http import HttpResponse
-from django.template.loader import render_to_string
 from django.db.models import Prefetch, Count
 from django.core.paginator import Paginator
-from django.db import models, transaction
+from django.db import transaction
 
 from .models import Item, Email, Attachment, Label, QRCode
 
 # Base Views
 class BaseListView(ListView):
-    """Base list view with common functionality.""" 
-    paginate_by = 100
+    """Base list view with common functionality."""
+    paginate_by = 50
     
     def get_template_names(self):
         """Return appropriate template based on request type."""
@@ -27,14 +26,13 @@ class BaseListView(ListView):
 
 class BaseDetailView(DetailView):
     """Base detail view with common functionality."""
-    
     def get_template_names(self):
         """Return appropriate template based on request type."""
         if self.request.headers.get('HX-Request'):
             return [self.partial_template_name]
         return [self.template_name]
 
-# Main List Views
+# List Views
 class EmailListView(BaseListView):
     """Display list of emails with attachments."""
     model = Email
@@ -66,7 +64,7 @@ class ItemListView(BaseListView):
     def get_context_data(self, **kwargs):
         """Add labels to context for the dropdown."""
         context = super().get_context_data(**kwargs)
-        context['labels'] = Label.objects.all().order_by('name')
+        context['all_labels'] = Label.objects.all().order_by('name')
         return context
 
 class LabelListView(BaseListView):
@@ -82,7 +80,7 @@ class LabelListView(BaseListView):
                 .prefetch_related('items')
                 .annotate(item_count=Count('items'))
                 .order_by('name'))
-    
+
 class AttachmentListView(BaseListView):
     """Display a filterable grid of attachments."""
     model = Attachment
@@ -147,7 +145,7 @@ class ItemDetailView(BaseDetailView):
     """Display detailed view of an item."""
     model = Item
     template_name = 'inventory/item_detail.html'
-    partial_template_name = 'inventory/partials/item_detail.html'
+    partial_template_name = 'inventory/partials/item_detail_modal.html'
     context_object_name = 'item'
 
     def get_object(self):
@@ -156,17 +154,49 @@ class ItemDetailView(BaseDetailView):
                 .prefetch_related('labels', 'qr_codes', 
                                 'attachments', 'emails')
                 .get(pk=self.kwargs['pk']))
-    def get_template_names(self):
-        """Return modal template for HTMX requests, full template otherwise."""
-        if self.request.headers.get('HX-Request'):
-            return [self.partial_template_name]
-        return [self.template_name]
-    
 
-# HTMX Action Views
+# HTMX Handlers
+@require_http_methods(["GET"])
+def image_preview(request, attachment_id):
+    """Show image preview in modal with navigation."""
+    attachment = get_object_or_404(Attachment, pk=attachment_id)
+    source_type = request.GET.get('source_type')
+    source_id = request.GET.get('source_id')
+    
+    if source_type == 'email' and source_id:
+        all_images = list(Attachment.objects.filter(
+            email_id=source_id,
+            content_type__startswith='image/'
+        ).order_by('id'))
+    elif source_type == 'item' and source_id:
+        all_images = list(Attachment.objects.filter(
+            item_id=source_id,
+            content_type__startswith='image/'
+        ).order_by('id'))
+    else:
+        all_images = [attachment]
+    
+    try:
+        current_index = all_images.index(attachment)
+        prev_image = all_images[current_index - 1] if current_index > 0 else None
+        next_image = all_images[current_index + 1] if current_index < len(all_images) - 1 else None
+    except ValueError:
+        prev_image = next_image = None
+    
+    context = {
+        'attachment': attachment,
+        'prev_image': prev_image,
+        'next_image': next_image,
+        'source_type': source_type,
+        'source_id': source_id,
+        'current_index': current_index + 1,
+        'total_images': len(all_images)
+    }
+    
+    return render(request, 'inventory/partials/image_preview_modal.html', context)
 @require_http_methods(["POST"])
 def create_label(request):
-    """Create a new label via HTMX request and return updated labels list."""
+    """Create a new label and return updated labels list."""
     name = request.POST.get('name')
     if not name:
         return HttpResponse("Label name is required", status=400)
@@ -174,9 +204,11 @@ def create_label(request):
     try:
         Label.objects.create(name=name)
         # Get updated labels with count
-        labels = Label.objects.annotate(
-            item_count=Count('items')
-        ).order_by('name')
+        labels = (Label.objects
+                 .prefetch_related('items')
+                 .annotate(item_count=Count('items'))
+                 .order_by('name'))
+        
         return render(request, 'inventory/partials/label_list.html',
                      {'labels': labels})
     except Exception as e:
@@ -184,35 +216,22 @@ def create_label(request):
 
 @require_http_methods(["POST"])
 def quick_create_label(request, item_id):
-    """Create a new label and update both the item's labels and dropdown."""
+    """Create a new label and add it to an item."""
     name = request.POST.get('name')
     if not name:
         return HttpResponse("Label name is required", status=400)
     
     try:
         with transaction.atomic():
-            # Create label
             label = Label.objects.create(name=name)
-            # Get item and add label
             item = get_object_or_404(Item, pk=item_id)
             item.labels.add(label)
             
-        # Get all labels for the dropdown
         context = {
             'item': item,
-            'all_labels': Label.objects.all().order_by('name'),
+            'all_labels': Label.objects.all().order_by('name')
         }
         return render(request, 'inventory/partials/item_label_section.html', context)
-    except Exception as e:
-        return HttpResponse(str(e), status=400)
- 
-@require_http_methods(["DELETE"])
-def delete_label(request, label_id):
-    """Delete a label via HTMX request."""
-    label = get_object_or_404(Label, id=label_id)
-    try:
-        label.delete()
-        return HttpResponse("", status=200)
     except Exception as e:
         return HttpResponse(str(e), status=400)
 
@@ -228,9 +247,9 @@ def add_label_to_item(request, item_id):
             
         context = {
             'item': item,
-            'all_labels': Label.objects.all().order_by('name'),
+            'all_labels': Label.objects.all().order_by('name')
         }
-        return render(request, 'inventory/partials/item_label_section.html', context)       
+        return render(request, 'inventory/partials/item_label_section.html', context)
     except Exception as e:
         return HttpResponse(str(e), status=400)
 
@@ -245,18 +264,21 @@ def remove_label_from_item(request, item_id, label_id):
         
         context = {
             'item': item,
-            'all_labels': Label.objects.all().order_by('name'),
+            'all_labels': Label.objects.all().order_by('name')
         }
         return render(request, 'inventory/partials/item_label_section.html', context)
     except Exception as e:
         return HttpResponse(str(e), status=400)
 
-@require_http_methods(["GET"])
-def image_preview(request, attachment_id):
-    """Show image preview in modal."""
-    attachment = get_object_or_404(Attachment, pk=attachment_id)
-    return render(request, 'inventory/partials/image_preview_modal.html', 
-                 {'attachment': attachment})
+@require_http_methods(["DELETE"])
+def delete_label(request, label_id):
+    """Delete a label."""
+    label = get_object_or_404(Label, id=label_id)
+    try:
+        label.delete()
+        return HttpResponse("", status=200)
+    except Exception as e:
+        return HttpResponse(str(e), status=400)
 
 @require_http_methods(["GET"])
 def search_items(request):

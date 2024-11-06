@@ -1,24 +1,90 @@
+<!-- templates/inventory/email_list.html -->
 {% extends "inventory/base.html" %}
+
 {% block content %}
 <div class="space-y-4">
     {% for email in emails %}
-        <div class="bg-white rounded-lg shadow p-4">
-            <h2 class="text-lg font-semibold">{{ email.subject }}</h2>
-            <div class="text-gray-600">{{ email.sender }}</div>
-            <div class="text-gray-500">{{ email.sent_at }}</div>
-            
-            {% if email.attachments.exists %}
-            <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="bg-white rounded-lg shadow p-4">
+        <div class="flex justify-between items-start">
+            <div>
+                <h2 class="text-lg font-semibold">{{ email.subject }}</h2>
+                <div class="text-gray-600">From: {{ email.sender }}</div>
+                <div class="text-gray-500">{{ email.sent_at|date:"Y-m-d H:i" }}</div>
+                
+                {% if email.item %}
+                <div class="mt-2">
+                    <a href="{% url 'inventory:item_detail' email.item.id %}"
+                       class="text-blue-500 hover:underline"
+                       hx-get="{% url 'inventory:item_detail' email.item.id %}"
+                       hx-target="#modal-container">
+                        View Related Item
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if email.attachments.exists %}
+        <div class="mt-4">
+            <div class="text-sm font-medium text-gray-700 mb-2">Attachments:</div>
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                 {% for attachment in email.attachments.all %}
-                    {% if attachment.is_image %}
-                        <img src="{{ attachment.file.url }}" 
-                             alt="{{ attachment.filename }}"
-                             class="w-full h-32 object-cover rounded">
-                    {% endif %}
+                    <div class="border rounded p-2">
+                        {% if attachment.is_image %}
+                            <img src="{{ attachment.file.url }}" 
+                                 alt="{{ attachment.filename }}"
+                                 class="w-full h-32 object-cover rounded cursor-pointer mb-2"
+                                 hx-get="{% url 'inventory:image_preview' attachment.id %}?source_type=email&source_id={{ email.id }}"
+                                 hx-target="#modal-container">
+                        {% else %}
+                            <div class="w-full h-32 flex items-center justify-center bg-gray-100 rounded mb-2">
+                                <span class="text-4xl text-gray-400">
+                                    {% if "pdf" in attachment.content_type %}📄
+                                    {% elif "word" in attachment.content_type %}📝
+                                    {% else %}📎{% endif %}
+                                </span>
+                            </div>
+                        {% endif %}
+                        <div class="text-sm truncate" title="{{ attachment.filename }}">
+                            {{ attachment.filename }}
+                        </div>
+                        <a href="{{ attachment.file.url }}" 
+                           class="text-blue-500 text-sm hover:underline"
+                           download>
+                            Download
+                        </a>
+                    </div>
                 {% endfor %}
             </div>
-            {% endif %}
         </div>
+        {% endif %}
+    </div>
+    {% empty %}
+    <div class="bg-white rounded-lg shadow p-4 text-center text-gray-500">
+        No emails found.
+    </div>
     {% endfor %}
+
+    {% if is_paginated %}
+    <div class="mt-6 flex justify-center gap-2">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" 
+               class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">
+                Previous
+            </a>
+        {% endif %}
+        
+        <span class="px-3 py-1">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </span>
+        
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}"
+               class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">
+                Next
+            </a>
+        {% endif %}
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

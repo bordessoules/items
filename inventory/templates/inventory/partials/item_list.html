@@ -1,40 +1,78 @@
-<!-- templates/inventory/item_list.html -->
+<!-- templates/inventory/partials/item_list.html -->
 {% for item in items %}
 <div class="bg-white rounded-lg shadow p-4" id="item-{{ item.id }}">
-    <!-- Make the item description clickable -->
     <div class="flex justify-between items-start">
+        <!-- Left side: Item info and labels -->
         <div>
             <h3 class="text-lg font-semibold cursor-pointer hover:text-blue-600"
                 hx-get="{% url 'inventory:item_detail' item.id %}"
                 hx-target="#modal-container">
                 {{ item.description }}
             </h3>
+            
+            <!-- Label section -->
             <div id="item-label-section-{{ item.id }}">
                 {% include "inventory/partials/item_label_section.html" with item=item all_labels=labels %}
             </div>
-            <div class="flex items-center gap-2">
-                <!-- Label controls are now in item_label_section.html -->
-            </div>
         </div>
-        
-        
     </div>
 
+    <!-- Attachments section -->
     {% if item.attachments.exists %}
     <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
         {% for attachment in item.attachments.all %}
             {% if attachment.is_image %}
-                <img src="{{ attachment.file.url }}" 
-                     alt="{{ attachment.filename }}"
-                     class="w-full h-32 object-cover rounded cursor-pointer"
-                     hx-get="{% url 'inventory:image_preview' attachment.id %}"
-                     hx-target="#modal-container">
+                <div class="relative group">
+                    <img src="{{ attachment.file.url }}" 
+                         alt="{{ attachment.filename }}"
+                         class="w-full h-32 object-cover rounded cursor-pointer"
+                         hx-get="{% url 'inventory:image_preview' attachment.id %}?source_type=item&source_id={{ item.id }}"
+                         hx-target="#modal-container">
+                    <div class="text-xs truncate text-gray-500 mt-1">
+                        {{ attachment.filename }}
+                    </div>
+                </div>
             {% endif %}
         {% endfor %}
     </div>
     {% endif %}
+
+    <!-- Additional item info -->
+    <div class="mt-2 text-sm text-gray-500">
+        Created: {{ item.created_at|date:"Y-m-d H:i" }}
+        {% if item.qr_codes.exists %}
+            • QR Codes: {{ item.qr_codes.count }}
+        {% endif %}
+        {% if item.emails.exists %}
+            • Emails: {{ item.emails.count }}
+        {% endif %}
+    </div>
+</div>
+{% empty %}
+<div class="bg-white rounded-lg shadow p-4 text-center text-gray-500">
+    No items found.
 </div>
 {% endfor %}
 
-<!-- Modal container for item details and image previews -->
-<div id="modal-container"></div>
+<!-- Pagination -->
+{% if is_paginated %}
+<div class="mt-6 flex justify-center gap-2">
+    {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}" 
+           class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">
+            Previous
+        </a>
+    {% endif %}
+    
+    <span class="px-3 py-1">
+        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+    </span>
+    
+    {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}"
+           class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">
+            Next
+        </a>
+    {% endif %}
+</div>
+{% endif %}

@@ -1,32 +1,64 @@
 <!-- templates/inventory/partials/image_preview_modal.html -->
-<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
-     id="modal-container">
-    <div class="bg-white rounded-lg max-w-4xl w-full">
-        <div class="p-4 relative">
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" 
+     id="modal-container"
+     @keydown.left="document.querySelector('[data-prev-image]')?.click()"
+     @keydown.right="document.querySelector('[data-next-image]')?.click()">
+    <div class="bg-white rounded-lg max-w-6xl w-full relative" @click.stop>
             <!-- Close button -->
-            <button class="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-                    onclick="this.closest('#modal-container').remove()">
-                ×
+        <button class="absolute top-2 right-2 text-white bg-gray-800 rounded-full w-8 h-8 flex items-center justify-center hover:bg-gray-700 z-20"
+                onclick="document.getElementById('modal-container').innerHTML = ''">
+            ×
+        </button>
+
+        <!-- Navigation buttons -->
+        {% if prev_image %}
+            <button class="absolute left-4 top-1/2 transform -translate-y-1/2 text-white bg-gray-800 rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-700 z-20"
+                    hx-get="{% url 'inventory:image_preview' prev_image.id %}?source_type={{ source_type }}&source_id={{ source_id }}"
+                    hx-target="#modal-container"
+                    data-prev-image>
+                ←
             </button>
+        {% endif %}
 
-            <!-- Image -->
-            <img src="{{ attachment.file.url }}" 
-                 alt="{{ attachment.filename }}"
-                 class="max-h-[80vh] mx-auto">
+        {% if next_image %}
+            <button class="absolute right-4 top-1/2 transform -translate-y-1/2 text-white bg-gray-800 rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-700 z-20"
+                    hx-get="{% url 'inventory:image_preview' next_image.id %}?source_type={{ source_type }}&source_id={{ source_id }}"
+                    hx-target="#modal-container"
+                    data-next-image>
+                →
+            </button>
+        {% endif %}
 
-            <!-- Image details -->
+        <div class="p-4">
+            <div class="relative">
+                <img src="{{ attachment.file.url }}" 
+                     alt="{{ attachment.filename }}"
+                     class="max-h-[75vh] mx-auto">
+            </div>
+
             <div class="mt-4 text-center">
                 <div class="font-medium">{{ attachment.filename }}</div>
                 <div class="text-sm text-gray-500">
-                    {{ attachment.size|filesizeformat }} - 
-                    {{ attachment.content_type }}
+                    {{ attachment.size|filesizeformat }} - {{ attachment.content_type }}
                 </div>
-                {% if attachment.item %}
-                    <a href="{% url 'inventory:item_detail' attachment.item.id %}" 
-                       class="text-blue-500 hover:underline">
-                        View Related Item
+                <div class="text-sm text-gray-500 mt-1">
+                    Image {{ current_index }} of {{ total_images }}
+                </div>
+                <div class="mt-2 flex justify-center gap-4">
+                    {% if attachment.item %}
+                        <a href="{% url 'inventory:item_detail' attachment.item.id %}"
+                           class="text-blue-500 hover:underline"
+                           hx-get="{% url 'inventory:item_detail' attachment.item.id %}"
+                           hx-target="#modal-container">
+                            View Item
+                        </a>
+                    {% endif %}
+                    <a href="{{ attachment.file.url }}"
+                       class="text-blue-500 hover:underline"
+                       download>
+                        Download
                     </a>
-                {% endif %}
+                </div>
             </div>
         </div>
     </div>

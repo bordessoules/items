@@ -3,59 +3,69 @@
 <html>
 <head>
     <title>Inventory Management</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://unpkg.com/htmx.org@1.9.6"></script>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100">
     <nav class="bg-white shadow mb-4">
-        <div class="flex space-x-4">
-            <!-- Links with active state and hover effects -->
-            <a href="/items/" 
-               class="text-gray-700 hover:text-gray-900
-                      {% if request.resolver_match.view_name == 'inventory:item_list' %}
-                          font-semibold
-                      {% endif %}">
-                Items
-            </a>
-            <a href="/labels/" 
-               class="text-gray-700 hover:text-gray-900
-                      {% if request.resolver_match.view_name == 'inventory:label_list' %}
-                          font-semibold
-                      {% endif %}">
-                Labels
-            </a>
-            <a href="/emails/" 
-               class="text-gray-700 hover:text-gray-900 
-                      {% if request.resolver_match.view_name == 'inventory:email_list' %}
-                          font-semibold
-                      {% endif %}">
-                Emails
-            </a>
-            <a href="/attachments/" 
-            class="text-gray-700 hover:text-gray-900 
-                   {% if request.resolver_match.view_name == 'inventory:attachment_list.html' %}
-                       font-semibold
-                   {% endif %}">
-             Attachments
-         </a>
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex space-x-4">
+                <a href="{% url 'inventory:email_list' %}" 
+                   class="text-gray-700 hover:text-gray-900 {% if request.resolver_match.view_name == 'inventory:email_list' %}font-semibold{% endif %}">
+                    Emails
+                </a>
+                <a href="{% url 'inventory:item_list' %}" 
+                   class="text-gray-700 hover:text-gray-900 {% if request.resolver_match.view_name == 'inventory:item_list' %}font-semibold{% endif %}">
+                    Items
+                </a>
+                <a href="{% url 'inventory:label_list' %}" 
+                   class="text-gray-700 hover:text-gray-900 {% if request.resolver_match.view_name == 'inventory:label_list' %}font-semibold{% endif %}">
+                    Labels
+                </a>
+                <a href="{% url 'inventory:attachment_list' %}" 
+                   class="text-gray-700 hover:text-gray-900 {% if request.resolver_match.view_name == 'inventory:attachment_list' %}font-semibold{% endif %}">
+                    Attachments
+                </a>
+            </div>
         </div>
     </nav>
     
     <main class="container mx-auto px-4">
         {% block content %}{% endblock %}
     </main>
+
+    <!-- Global Modal Container -->
+    <div id="modal-container"></div>
+
+    <!-- Modal handling script -->
     <script>
+        // Close modal with ESC key
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 const modal = document.querySelector('#modal-container');
-                if (modal) {
-                    modal.remove();
+                if (modal && modal.children.length > 0) {
+                    modal.innerHTML = '';
                 }
             }
         });
-        </script>
-    
 
+        // Close modal when clicking outside
+        document.addEventListener('click', function(e) {
+            const modal = document.querySelector('#modal-container');
+            if (modal && e.target === modal) {
+                modal.innerHTML = '';
+            }
+        });
 
+        // Arrow key navigation for image previews
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight') {
+                document.querySelector('[data-next-image]')?.click();
+            } else if (e.key === 'ArrowLeft') {
+                document.querySelector('[data-prev-image]')?.click();
+            }
+        });
+    </script>
 </body>
 </html>

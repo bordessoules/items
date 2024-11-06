@@ -63,10 +63,10 @@
                         <div class="border rounded p-2">
                             {% if attachment.is_image %}
                                 <img src="{{ attachment.file.url }}" 
-                                     alt="{{ attachment.filename }}"
-                                     class="w-full h-32 object-cover rounded mb-2 cursor-pointer"
-                                     hx-get="{% url 'inventory:image_preview' attachment.id %}"
-                                     hx-target="#modal-container">
+                                    alt="{{ attachment.filename }}"
+                                    class="w-full h-32 object-cover rounded cursor-pointer mb-2"
+                                    hx-get="{% url 'inventory:image_preview' attachment.id %}?source_type=item&source_id={{ item.id }}"
+                                    hx-target="#modal-container">
                             {% endif %}
                             <div class="text-sm truncate">{{ attachment.filename }}</div>
                             <a href="{{ attachment.file.url }}" 
