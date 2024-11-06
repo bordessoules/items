@@ -1,71 +1,24 @@
-{% extends 'inventory/base.html' %}
-
-{% block title %}Emails{% endblock %}
-
+{% extends "inventory/base.html" %}
 {% block content %}
-<div class="bg-white rounded-lg shadow p-6 mb-6">
-    <div class="flex justify-between items-center mb-4">
-        <h1 class="text-2xl font-bold text-gray-800">Emails</h1>
-        <div class="text-gray-600">
-            Total: {{ total_emails }} emails | {{ total_attachments }} attachments
-        </div>
-    </div>
-
-    <div class="overflow-x-auto">
-        <table class="min-w-full table-auto">
-            <thead>
-                <tr class="bg-gray-50">
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">From</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Attachments</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                {% for email in emails %}
-                <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {{ email.sent_at|date:"Y-m-d H:i" }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {{ email.sender }}
-                    </td>
-                    <td class="px-6 py-4 text-sm text-gray-900">
-                        <a href="{% url 'inventory:email_detail' email.pk %}" class="hover:text-blue-600">
-                            {{ email.subject }}
-                        </a>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {{ email.attachments.count }}
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="4" class="px-6 py-4 text-center text-gray-500">
-                        No emails found
-                    </td>
-                </tr>
+<div class="space-y-4">
+    {% for email in emails %}
+        <div class="bg-white rounded-lg shadow p-4">
+            <h2 class="text-lg font-semibold">{{ email.subject }}</h2>
+            <div class="text-gray-600">{{ email.sender }}</div>
+            <div class="text-gray-500">{{ email.sent_at }}</div>
+            
+            {% if email.attachments.exists %}
+            <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+                {% for attachment in email.attachments.all %}
+                    {% if attachment.is_image %}
+                        <img src="{{ attachment.file.url }}" 
+                             alt="{{ attachment.filename }}"
+                             class="w-full h-32 object-cover rounded">
+                    {% endif %}
                 {% endfor %}
-            </tbody>
-        </table>
-    </div>
-
-    {% if is_paginated %}
-    <div class="flex justify-center mt-4">
-        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-            {% if page_obj.has_previous %}
-            <a href="?page={{ page_obj.previous_page_number }}" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                Previous
-            </a>
+            </div>
             {% endif %}
-
-            {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                Next
-            </a>
-            {% endif %}
-        </nav>
-    </div>
-    {% endif %}
+        </div>
+    {% endfor %}
 </div>
 {% endblock %}

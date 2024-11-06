@@ -1,0 +1,40 @@
+<!-- templates/inventory/item_list.html -->
+{% for item in items %}
+<div class="bg-white rounded-lg shadow p-4" id="item-{{ item.id }}">
+    <!-- Make the item description clickable -->
+    <div class="flex justify-between items-start">
+        <div>
+            <h3 class="text-lg font-semibold cursor-pointer hover:text-blue-600"
+                hx-get="{% url 'inventory:item_detail' item.id %}"
+                hx-target="#modal-container">
+                {{ item.description }}
+            </h3>
+            <div id="item-label-section-{{ item.id }}">
+                {% include "inventory/partials/item_label_section.html" with item=item all_labels=labels %}
+            </div>
+            <div class="flex items-center gap-2">
+                <!-- Label controls are now in item_label_section.html -->
+            </div>
+        </div>
+        
+        
+    </div>
+
+    {% if item.attachments.exists %}
+    <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+        {% for attachment in item.attachments.all %}
+            {% if attachment.is_image %}
+                <img src="{{ attachment.file.url }}" 
+                     alt="{{ attachment.filename }}"
+                     class="w-full h-32 object-cover rounded cursor-pointer"
+                     hx-get="{% url 'inventory:image_preview' attachment.id %}"
+                     hx-target="#modal-container">
+            {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endfor %}
+
+<!-- Modal container for item details and image previews -->
+<div id="modal-container"></div>

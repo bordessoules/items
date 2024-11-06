@@ -1,0 +1,33 @@
+<!-- templates/inventory/partials/image_preview_modal.html -->
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
+     id="modal-container">
+    <div class="bg-white rounded-lg max-w-4xl w-full">
+        <div class="p-4 relative">
+            <!-- Close button -->
+            <button class="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+                    onclick="this.closest('#modal-container').remove()">
+                ×
+            </button>
+
+            <!-- Image -->
+            <img src="{{ attachment.file.url }}" 
+                 alt="{{ attachment.filename }}"
+                 class="max-h-[80vh] mx-auto">
+
+            <!-- Image details -->
+            <div class="mt-4 text-center">
+                <div class="font-medium">{{ attachment.filename }}</div>
+                <div class="text-sm text-gray-500">
+                    {{ attachment.size|filesizeformat }} - 
+                    {{ attachment.content_type }}
+                </div>
+                {% if attachment.item %}
+                    <a href="{% url 'inventory:item_detail' attachment.item.id %}" 
+                       class="text-blue-500 hover:underline">
+                        View Related Item
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>

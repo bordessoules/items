@@ -1,28 +1,61 @@
+<!-- templates/inventory/base.html -->
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Email Inventory{% endblock %}</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <title>Inventory Management</title>
+    <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100">
-    <nav class="bg-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-4">
-            <div class="flex justify-between h-16">
-                <div class="flex">
-                    <div class="flex-shrink-0 flex items-center">
-                        <a href="{% url 'inventory:email_list' %}" class="text-xl font-bold text-gray-800">
-                            Email Inventory
-                        </a>
-                    </div>
-                </div>
-            </div>
+    <nav class="bg-white shadow mb-4">
+        <div class="flex space-x-4">
+            <!-- Links with active state and hover effects -->
+            <a href="/items/" 
+               class="text-gray-700 hover:text-gray-900
+                      {% if request.resolver_match.view_name == 'inventory:item_list' %}
+                          font-semibold
+                      {% endif %}">
+                Items
+            </a>
+            <a href="/labels/" 
+               class="text-gray-700 hover:text-gray-900
+                      {% if request.resolver_match.view_name == 'inventory:label_list' %}
+                          font-semibold
+                      {% endif %}">
+                Labels
+            </a>
+            <a href="/emails/" 
+               class="text-gray-700 hover:text-gray-900 
+                      {% if request.resolver_match.view_name == 'inventory:email_list' %}
+                          font-semibold
+                      {% endif %}">
+                Emails
+            </a>
+            <a href="/attachments/" 
+            class="text-gray-700 hover:text-gray-900 
+                   {% if request.resolver_match.view_name == 'inventory:attachment_list.html' %}
+                       font-semibold
+                   {% endif %}">
+             Attachments
+         </a>
         </div>
     </nav>
-
-    <main class="container mx-auto px-4 py-8">
+    
+    <main class="container mx-auto px-4">
         {% block content %}{% endblock %}
     </main>
+    <script>
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modal = document.querySelector('#modal-container');
+                if (modal) {
+                    modal.remove();
+                }
+            }
+        });
+        </script>
+    
+
+
 </body>
 </html>

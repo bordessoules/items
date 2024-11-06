@@ -1,184 +1,270 @@
-from django.shortcuts import render
+"""
+Views for the inventory management system.
+Includes both list and detail views with HTMX enhancements.
+"""
+
+from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView, DetailView
-from rest_framework import viewsets, status
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import SearchFilter, OrderingFilter
-from django.db import transaction
-import re
-from .models import Item, QRCode, Label, Email, Attachment
-from .serializers import (
-    ItemSerializer, QRCodeSerializer, LabelSerializer,
-    EmailSerializer, AttachmentSerializer
-)
+from django.views.decorators.http import require_http_methods
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from django.db.models import Prefetch, Count
+from django.core.paginator import Paginator
+from django.db import models, transaction
 
-class ItemViewSet(viewsets.ModelViewSet):
-    queryset = Item.objects.prefetch_related('qr_codes', 'labels', 'emails', 'attachments')
-    serializer_class = ItemSerializer
-    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    search_fields = ['description', 'labels__name']
-    ordering_fields = ['created_at', 'updated_at']
-    ordering = ['-created_at']
+from .models import Item, Email, Attachment, Label, QRCode
 
-    @action(detail=True, methods=['post'])
-    def add_qr_code(self, request, pk=None):
-        item = self.get_object()
-        code = request.data.get('code')
-        if not code:
-            return Response(
-                {'error': 'QR code is required'}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        # Check if QR code already exists
-        if QRCode.objects.filter(code=code).exists():
-            return Response(
-                {'error': f'QR code {code} is already assigned to another item'}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
-            
-        try:
-            qr_code = QRCode.objects.create(item=item, code=code)
-            return Response(QRCodeSerializer(qr_code).data)
-        except Exception as e:
-            return Response(
-                {'error': str(e)}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
+# Base Views
+class BaseListView(ListView):
+    """Base list view with common functionality.""" 
+    paginate_by = 100
+    
+    def get_template_names(self):
+        """Return appropriate template based on request type."""
+        if self.request.headers.get('HX-Request'):
+            return [self.partial_template_name]
+        return [self.template_name]
 
-    @action(detail=True, methods=['post'])
-    def add_label(self, request, pk=None):
-        item = self.get_object()
-        label_name = request.data.get('name')
-        if not label_name:
-            return Response(
-                {'error': 'Label name is required'}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        label, _ = Label.objects.get_or_create(name=label_name)
-        item.labels.add(label)
-        return Response(LabelSerializer(label).data)
+class BaseDetailView(DetailView):
+    """Base detail view with common functionality."""
+    
+    def get_template_names(self):
+        """Return appropriate template based on request type."""
+        if self.request.headers.get('HX-Request'):
+            return [self.partial_template_name]
+        return [self.template_name]
 
-class QRCodeViewSet(viewsets.ModelViewSet):
-    queryset = QRCode.objects.all()
-    serializer_class = QRCodeSerializer
-    filter_backends = [SearchFilter]
-    search_fields = ['code']
-
-class LabelViewSet(viewsets.ModelViewSet):
-    queryset = Label.objects.all()
-    serializer_class = LabelSerializer
-    filter_backends = [SearchFilter]
-    search_fields = ['name']
-
-class EmailViewSet(viewsets.ModelViewSet):
-    """ViewSet for handling Email operations."""
-    queryset = Email.objects.prefetch_related('attachments')
-    serializer_class = EmailSerializer
-    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    search_fields = ['subject', 'sender']
-    ordering_fields = ['sent_at', 'created_at']
-    ordering = ['-sent_at']
-
-    @action(detail=False, methods=['post'])
-    def process_unhandled(self, request):
-        """Create items from unprocessed emails with QR codes in subject."""
-        unhandled = self.get_queryset().filter(item__isnull=True)
-        stats = {'total': unhandled.count(), 'created': 0, 'skipped': 0}
-        skipped = []
-
-        try:
-            with transaction.atomic():
-                for email in unhandled:
-                    result = self._process_email(email)
-                    if result.get('created'):
-                        stats['created'] += 1
-                    else:
-                        stats['skipped'] += 1
-                        skipped.append(result['skip_info'])
-
-            return Response({
-                'stats': stats,
-                'skipped': skipped
-            })
-
-        except Exception as e:
-            return Response(
-                {'error': str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-    def _process_email(self, email: Email) -> dict:
-        """Process a single email and return result."""
-        # Skip replies
-        if email.subject.lower().startswith('re:'):
-            return {
-                'skip_info': {
-                    'email': email.email_uid,
-                    'reason': 'reply',
-                    'subject': email.subject
-                }
-            }
-
-        # Extract QR code
-        qr_match = re.search(r'\b(\d{5})\b', email.subject or '')
-        if not qr_match:
-            return {
-                'skip_info': {
-                    'email': email.email_uid,
-                    'reason': 'no_qr_code',
-                    'subject': email.subject
-                }
-            }
-
-        qr_code = qr_match.group(1)
-        
-        # Skip if QR exists
-        if QRCode.objects.filter(code=qr_code).exists():
-            return {
-                'skip_info': {
-                    'email': email.email_uid,
-                    'reason': 'existing_qr',
-                    'qr': qr_code
-                }
-            }
-
-        # Create item and link
-        item = Item.objects.create(description=email.subject.strip())
-        QRCode.objects.create(item=item, code=qr_code)
-        email.item = item
-        email.save()
-
-        return {'created': True}
-
-class AttachmentViewSet(viewsets.ModelViewSet):
-    queryset = Attachment.objects.all()
-    serializer_class = AttachmentSerializer
-    filter_backends = [DjangoFilterBackend, SearchFilter]
-    search_fields = ['filename']
-    filterset_fields = ['content_type']
-
-class EmailListView(ListView):
+# Main List Views
+class EmailListView(BaseListView):
+    """Display list of emails with attachments."""
     model = Email
     template_name = 'inventory/email_list.html'
+    partial_template_name = 'inventory/partials/email_list.html'
     context_object_name = 'emails'
-    paginate_by = 20
-    ordering = ['-sent_at']
+
+    def get_queryset(self):
+        """Get emails with related data prefetched."""
+        return (Email.objects
+                .prefetch_related('attachments')
+                .select_related('item')
+                .order_by('-sent_at'))
+
+class ItemListView(BaseListView):
+    """Display list of inventory items."""
+    model = Item
+    template_name = 'inventory/item_list.html'
+    partial_template_name = 'inventory/partials/item_list.html'
+    context_object_name = 'items'
+
+    def get_queryset(self):
+        """Get items with related data prefetched."""
+        return (Item.objects
+                .prefetch_related('labels', 'qr_codes', 
+                                'attachments', 'emails')
+                .order_by('-created_at'))
 
     def get_context_data(self, **kwargs):
+        """Add labels to context for the dropdown."""
         context = super().get_context_data(**kwargs)
-        context['total_emails'] = Email.objects.count()
-        context['total_attachments'] = Attachment.objects.count()
+        context['labels'] = Label.objects.all().order_by('name')
         return context
 
-class EmailDetailView(DetailView):
+class LabelListView(BaseListView):
+    """Display list of labels with their associated items."""
+    model = Label
+    template_name = 'inventory/label_list.html'
+    partial_template_name = 'inventory/partials/label_list.html'
+    context_object_name = 'labels'
+
+    def get_queryset(self):
+        """Get labels with related items prefetched."""
+        return (Label.objects
+                .prefetch_related('items')
+                .annotate(item_count=Count('items'))
+                .order_by('name'))
+    
+class AttachmentListView(BaseListView):
+    """Display a filterable grid of attachments."""
+    model = Attachment
+    template_name = 'inventory/attachment_list.html'
+    partial_template_name = 'inventory/partials/attachment_list.html'
+    context_object_name = 'attachments'
+    paginate_by = 24  # 6x4 grid looks nice
+
+    def get_queryset(self):
+        """Get filtered attachments."""
+        queryset = (Attachment.objects
+                   .select_related('item', 'email')
+                   .order_by('-created_at'))
+        
+        # Handle filtering
+        file_type = self.request.GET.get('type', 'all')
+        if file_type == 'images':
+            queryset = queryset.filter(content_type__startswith='image/')
+        elif file_type == 'documents':
+            queryset = queryset.filter(
+                content_type__in=['application/pdf', 'application/msword', 
+                                'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+            )
+        
+        # Handle search
+        search = self.request.GET.get('search', '').strip()
+        if search:
+            queryset = queryset.filter(filename__icontains=search)
+            
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        """Add filtering context."""
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'current_type': self.request.GET.get('type', 'all'),
+            'search_query': self.request.GET.get('search', ''),
+            'total_count': Attachment.objects.count(),
+            'image_count': Attachment.objects.filter(content_type__startswith='image/').count(),
+            'document_count': Attachment.objects.filter(
+                content_type__in=['application/pdf', 'application/msword']
+            ).count()
+        })
+        return context
+
+# Detail Views
+class EmailDetailView(BaseDetailView):
+    """Display detailed view of an email."""
     model = Email
     template_name = 'inventory/email_detail.html'
+    partial_template_name = 'inventory/partials/email_detail.html'
     context_object_name = 'email'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        email = self.get_object()
-        context['attachments'] = email.attachments.all()
-        return context
+    def get_object(self):
+        """Get email with related data prefetched."""
+        return (Email.objects
+                .prefetch_related('attachments')
+                .select_related('item')
+                .get(pk=self.kwargs['pk']))
+
+class ItemDetailView(BaseDetailView):
+    """Display detailed view of an item."""
+    model = Item
+    template_name = 'inventory/item_detail.html'
+    partial_template_name = 'inventory/partials/item_detail.html'
+    context_object_name = 'item'
+
+    def get_object(self):
+        """Get item with related data prefetched."""
+        return (Item.objects
+                .prefetch_related('labels', 'qr_codes', 
+                                'attachments', 'emails')
+                .get(pk=self.kwargs['pk']))
+    def get_template_names(self):
+        """Return modal template for HTMX requests, full template otherwise."""
+        if self.request.headers.get('HX-Request'):
+            return [self.partial_template_name]
+        return [self.template_name]
+    
+
+# HTMX Action Views
+@require_http_methods(["POST"])
+def create_label(request):
+    """Create a new label via HTMX request and return updated labels list."""
+    name = request.POST.get('name')
+    if not name:
+        return HttpResponse("Label name is required", status=400)
+    
+    try:
+        Label.objects.create(name=name)
+        # Get updated labels with count
+        labels = Label.objects.annotate(
+            item_count=Count('items')
+        ).order_by('name')
+        return render(request, 'inventory/partials/label_list.html',
+                     {'labels': labels})
+    except Exception as e:
+        return HttpResponse(str(e), status=400)
+
+@require_http_methods(["POST"])
+def quick_create_label(request, item_id):
+    """Create a new label and update both the item's labels and dropdown."""
+    name = request.POST.get('name')
+    if not name:
+        return HttpResponse("Label name is required", status=400)
+    
+    try:
+        with transaction.atomic():
+            # Create label
+            label = Label.objects.create(name=name)
+            # Get item and add label
+            item = get_object_or_404(Item, pk=item_id)
+            item.labels.add(label)
+            
+        # Get all labels for the dropdown
+        context = {
+            'item': item,
+            'all_labels': Label.objects.all().order_by('name'),
+        }
+        return render(request, 'inventory/partials/item_label_section.html', context)
+    except Exception as e:
+        return HttpResponse(str(e), status=400)
+ 
+@require_http_methods(["DELETE"])
+def delete_label(request, label_id):
+    """Delete a label via HTMX request."""
+    label = get_object_or_404(Label, id=label_id)
+    try:
+        label.delete()
+        return HttpResponse("", status=200)
+    except Exception as e:
+        return HttpResponse(str(e), status=400)
+
+@require_http_methods(["POST"])
+def add_label_to_item(request, item_id):
+    """Add a label to an item."""
+    item = get_object_or_404(Item, pk=item_id)
+    label_id = request.POST.get('label_id')    
+    try:
+        if label_id:
+            label = get_object_or_404(Label, pk=label_id)
+            item.labels.add(label)
+            
+        context = {
+            'item': item,
+            'all_labels': Label.objects.all().order_by('name'),
+        }
+        return render(request, 'inventory/partials/item_label_section.html', context)       
+    except Exception as e:
+        return HttpResponse(str(e), status=400)
+
+@require_http_methods(["DELETE", "POST"])
+def remove_label_from_item(request, item_id, label_id):
+    """Remove a label from an item."""
+    try:
+        with transaction.atomic():
+            item = get_object_or_404(Item, pk=item_id)
+            label = get_object_or_404(Label, pk=label_id)
+            item.labels.remove(label)
+        
+        context = {
+            'item': item,
+            'all_labels': Label.objects.all().order_by('name'),
+        }
+        return render(request, 'inventory/partials/item_label_section.html', context)
+    except Exception as e:
+        return HttpResponse(str(e), status=400)
+
+@require_http_methods(["GET"])
+def image_preview(request, attachment_id):
+    """Show image preview in modal."""
+    attachment = get_object_or_404(Attachment, pk=attachment_id)
+    return render(request, 'inventory/partials/image_preview_modal.html', 
+                 {'attachment': attachment})
+
+@require_http_methods(["GET"])
+def search_items(request):
+    """Search items and return results."""
+    query = request.GET.get('q', '')
+    items = (Item.objects
+             .filter(description__icontains=query)
+             .prefetch_related('labels', 'attachments')[:10])
+    
+    return render(request, 'inventory/partials/item_list.html', 
+                 {'items': items, 'htmx': True})

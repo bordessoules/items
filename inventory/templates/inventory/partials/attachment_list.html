@@ -1,0 +1,49 @@
+<!-- templates/inventory/partials/attachment_list.html -->
+{% for attachment in attachments %}
+<div class="bg-white rounded-lg shadow overflow-hidden">
+    {% if attachment.is_image %}
+        <div class="relative aspect-square">
+            <img src="{{ attachment.file.url }}"
+                 alt="{{ attachment.filename }}"
+                 class="w-full h-full object-cover cursor-pointer"
+                 hx-get="{% url 'inventory:image_preview' attachment.id %}"
+                 hx-target="#modal-container">
+        </div>
+    {% else %}
+        <div class="aspect-square bg-gray-100 flex items-center justify-center">
+            <div class="text-4xl text-gray-400">
+                {% if "pdf" in attachment.content_type %}
+                    📄
+                {% elif "word" in attachment.content_type %}
+                    📝
+                {% else %}
+                    📎
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="p-3">
+        <div class="text-sm font-medium truncate" title="{{ attachment.filename }}">
+            {{ attachment.filename }}
+        </div>
+        <div class="text-xs text-gray-500 mt-1">
+            {{ attachment.size|filesizeformat }}
+        </div>
+        
+        {% if attachment.item %}
+            <a href="{% url 'inventory:item_detail' attachment.item.id %}"
+               class="text-xs text-blue-500 hover:underline block mt-1">
+                View Item
+            </a>
+        {% endif %}
+        
+        {% if attachment.email %}
+            <a href="{% url 'inventory:email_detail' attachment.email.id %}"
+               class="text-xs text-blue-500 hover:underline block mt-1">
+                View Email
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endfor %}

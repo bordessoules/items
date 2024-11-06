@@ -1,0 +1,19 @@
+<!-- templates/inventory/item_list.html -->
+{% extends "inventory/base.html" %}
+{% block content %}
+<div class="mb-6">
+    <div class="flex justify-between items-center mb-4">
+        <h1 class="text-2xl font-bold">Items</h1>
+        <input type="text" 
+               placeholder="Search items..."
+               class="border rounded p-2"
+               hx-get="{% url 'inventory:search_items' %}"
+               hx-trigger="keyup changed delay:500ms"
+               hx-target="#items-list">
+    </div>
+    
+    <div id="items-list" class="space-y-4">
+        {% include "inventory/partials/item_list.html" %}
+    </div>
+</div>
+{% endblock %}

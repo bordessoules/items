@@ -1,0 +1,88 @@
+<!-- templates/inventory/item_detail.html -->
+{% extends "inventory/base.html" %}
+
+{% block content %}
+<div class="container mx-auto p-4">
+    <div class="bg-white rounded-lg shadow">
+        <div class="p-6">
+            <div class="flex justify-between items-start mb-6">
+                <h1 class="text-2xl font-bold">{{ item.description }}</h1>
+                <div class="text-sm text-gray-500">
+                    Created: {{ item.created_at|date:"Y-m-d H:i" }}
+                </div>
+            </div>
+
+            <!-- Labels -->
+            <div class="mb-6">
+                <h2 class="text-lg font-semibold mb-2">Labels</h2>
+                <div class="flex flex-wrap gap-2">
+                    {% for label in item.labels.all %}
+                        <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
+                            {{ label.name }}
+                        </span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- QR Codes -->
+            <div class="mb-6">
+                <h2 class="text-lg font-semibold mb-2">QR Codes</h2>
+                <div class="flex flex-wrap gap-2">
+                    {% for qr in item.qr_codes.all %}
+                        <span class="bg-gray-100 px-3 py-1 rounded">
+                            {{ qr.code }}
+                        </span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Related Emails -->
+            {% if item.emails.exists %}
+            <div class="mb-6">
+                <h2 class="text-lg font-semibold mb-2">Related Emails</h2>
+                <div class="space-y-2">
+                    {% for email in item.emails.all %}
+                        <div class="border rounded p-3">
+                            <div class="font-medium">{{ email.subject }}</div>
+                            <div class="text-sm text-gray-500">
+                                From: {{ email.sender }} - 
+                                {{ email.sent_at|date:"Y-m-d H:i" }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Attachments -->
+            {% if item.attachments.exists %}
+            <div>
+                <h2 class="text-lg font-semibold mb-2">Attachments</h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {% for attachment in item.attachments.all %}
+                        <div class="border rounded p-2">
+                            {% if attachment.is_image %}
+                                <img src="{{ attachment.file.url }}" 
+                                     alt="{{ attachment.filename }}"
+                                     class="w-full h-32 object-cover rounded mb-2 cursor-pointer"
+                                     hx-get="{% url 'inventory:image_preview' attachment.id %}"
+                                     hx-target="#modal-container">
+                            {% endif %}
+                            <div class="text-sm truncate">{{ attachment.filename }}</div>
+                            <a href="{{ attachment.file.url }}" 
+                               class="text-blue-500 text-sm hover:underline"
+                               download>
+                                Download
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal container for image previews -->
+<div id="modal-container"></div>
+{% endblock %}

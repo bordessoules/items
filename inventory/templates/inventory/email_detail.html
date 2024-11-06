@@ -1,60 +1,28 @@
-{% extends 'inventory/base.html' %}
-{% block title %}{{ email.subject }}{% endblock %}
+{% extends "inventory/base.html" %}
 {% block content %}
 <div class="bg-white rounded-lg shadow p-6">
-    <div class="mb-6">
-        <a href="{% url 'inventory:email_list' %}" class="text-blue-600 hover:text-blue-800">
-            ← Back to emails
-        </a>
-    </div>
-    <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-800 mb-2">{{ email.subject }}</h1>
-        <div class="text-gray-600">
-            <p>From: {{ email.sender }}</p>
-            <p>Date: {{ email.sent_at|date:"Y-m-d H:i" }}</p>
-            <p>To: {{ email.recipients|join:", " }}</p>
-        </div>
-    </div>
-
-    {% if attachments %}
-    <div class="mb-6">
-        <!-- Show images first -->
-        <div class="flex flex-wrap gap-4 mb-4">
-            {% for attachment in attachments %}
-                {% if attachment.is_image %}
-                    <img src="{{ attachment.file.url }}" 
-                         alt="{{ attachment.filename }}" 
-                         class="h-40 w-auto object-contain border rounded"
-                    />
-                {% endif %}
-            {% endfor %}
-        </div>
-
-        <!-- Then show all attachments list -->
-        <h2 class="text-xl font-semibold text-gray-800 mb-3">Attachments</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {% for attachment in attachments %}
-            <div class="border rounded-lg p-4">
-                <div class="flex items-center justify-between">
-                    <div class="overflow-hidden">
-                        <p class="font-medium text-gray-900 truncate">{{ attachment.filename }}</p>
-                        <p class="text-sm text-gray-500">{{ attachment.size|filesizeformat }}</p>
-                    </div>
-                    <a href="{{ attachment.file.url }}" class="ml-4 text-blue-600 hover:text-blue-800" target="_blank">
-                        Download
-                    </a>
+    <h1 class="text-2xl font-bold mb-4">{{ email.subject }}</h1>
+    <div class="text-gray-600 mb-2">From: {{ email.sender }}</div>
+    <div class="text-gray-500 mb-4">{{ email.sent_at }}</div>
+    
+    <div class="whitespace-pre-wrap mb-6">{{ email.body }}</div>
+    
+    {% if email.attachments.exists %}
+    <div class="border-t pt-4">
+        <h2 class="font-semibold mb-2">Attachments:</h2>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {% for attachment in email.attachments.all %}
+                <div class="border rounded p-2">
+                    {% if attachment.is_image %}
+                        <img src="{{ attachment.file.url }}" 
+                             alt="{{ attachment.filename }}"
+                             class="w-full h-32 object-cover mb-2">
+                    {% endif %}
+                    <div class="text-sm truncate">{{ attachment.filename }}</div>
                 </div>
-            </div>
             {% endfor %}
         </div>
     </div>
     {% endif %}
-
-    <div>
-        <h2 class="text-xl font-semibold text-gray-800 mb-3">Message</h2>
-        <div class="bg-gray-50 rounded-lg p-4">
-            <pre class="whitespace-pre-wrap text-gray-700">{{ email.body }}</pre>
-        </div>
-    </div>
 </div>
 {% endblock %}

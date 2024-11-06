@@ -1,0 +1,13 @@
+<!-- templates/inventory/partials/item_labels.html -->
+<div class="flex flex-wrap gap-2 mt-2">
+    {% for label in item.labels.all %}
+        <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm flex items-center">
+            {{ label.name }}
+            <button class="ml-1 text-blue-600 hover:text-blue-800"
+                    hx-delete="{% url 'inventory:remove_label_from_item' item.id label.id %}"
+                    hx-target="#item-label-section-{{ item.id }}">
+                ×
+            </button>
+        </span>
+    {% endfor %}
+</div>

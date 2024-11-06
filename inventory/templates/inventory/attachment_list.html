@@ -1,0 +1,81 @@
+<!-- templates/inventory/attachment_list.html -->
+{% extends "inventory/base.html" %}
+
+{% block content %}
+<div class="container mx-auto p-4">
+    <!-- Header with Stats -->
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold mb-2">Attachments</h1>
+        <div class="text-sm text-gray-500">
+            {{ total_count }} total attachments |
+            {{ image_count }} images |
+            {{ document_count }} documents
+        </div>
+    </div>
+
+    <!-- Filters and Search -->
+    <div class="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6">
+        <!-- Type Filters -->
+        <div class="flex gap-2">
+            <a href="{% url 'inventory:attachment_list' %}?type=all" 
+               class="px-3 py-1 rounded {% if current_type == 'all' %}bg-blue-500 text-white{% else %}bg-gray-200 text-gray-700{% endif %}">
+                All
+            </a>
+            <a href="{% url 'inventory:attachment_list' %}?type=images" 
+               class="px-3 py-1 rounded {% if current_type == 'images' %}bg-blue-500 text-white{% else %}bg-gray-200 text-gray-700{% endif %}">
+                Images
+            </a>
+            <a href="{% url 'inventory:attachment_list' %}?type=documents" 
+               class="px-3 py-1 rounded {% if current_type == 'documents' %}bg-blue-500 text-white{% else %}bg-gray-200 text-gray-700{% endif %}">
+                Documents
+            </a>
+        </div>
+
+        <!-- Search -->
+        <form class="w-full sm:w-auto" 
+              hx-get="{% url 'inventory:attachment_list' %}"
+              hx-target="#attachments-grid"
+              hx-trigger="submit, input[name='search'] keyup delay:500ms">
+            <input type="hidden" name="type" value="{{ current_type }}">
+            <input type="search"
+                   name="search"
+                   placeholder="Search attachments..."
+                   value="{{ search_query }}"
+                   class="w-full sm:w-64 border rounded px-3 py-1">
+        </form>
+    </div>
+
+    <!-- Attachments Grid -->
+    <div id="attachments-grid" class="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+        {% include "inventory/partials/attachment_list.html" %}
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="mt-6 flex justify-center">
+        <div class="flex gap-2">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}&type={{ current_type }}&search={{ search_query }}"
+               class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">
+                Previous
+            </a>
+            {% endif %}
+
+            <span class="px-3 py-1">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&type={{ current_type }}&search={{ search_query }}"
+               class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">
+                Next
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Image Preview Modal Container -->
+    <div id="modal-container"></div>
+</div>
+{% endblock %}
