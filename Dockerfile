@@ -41,6 +41,7 @@ RUN mkdir -p /app/media/attachments && chmod -R 777 /app/media
 
 # Copy entrypoint script first and fix permissions
 COPY entrypoint.sh /app/
+RUN dos2unix /app/entrypoint.sh 
 RUN chmod +x /app/entrypoint.sh
 
 # Copy project files
