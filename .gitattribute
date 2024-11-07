@@ -1,3 +1,21 @@
-# Enforce LF line endings for shell scripts
+# Set default behavior to automatically normalize line endings.
+* text=auto
+
+# Force Unix-style line endings (LF) for shell scripts
 *.sh text eol=lf
 
+# Force batch and cmd files to always use CRLF line endings
+*.{cmd,[cC][mM][dD]} text eol=crlf
+*.{bat,[bB][aA][tT]} text eol=crlf
+
+# Force all text files to use LF
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.js text eol=lf
+*.jsx text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+Dockerfile text eol=lf
