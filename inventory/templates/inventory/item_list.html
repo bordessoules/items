@@ -16,7 +16,13 @@
                             hx-target="#modal-container">
                             {{ item.description }}
                         </h3>
-                        
+			<div>
+			    {% if item.emails.exists %}
+			        {% for email in item.emails.all %}
+			            <p>{{ email.body }}</p>
+				{% endfor %}
+			    {% endif %}
+			</div>
                         <div id="item-label-section-{{ item.id }}">
                             {% include "inventory/partials/item_label_section.html" with item=item all_labels=all_labels %}
                         </div>
