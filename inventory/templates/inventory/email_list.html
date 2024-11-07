@@ -1,90 +1,78 @@
-<!-- templates/inventory/email_list.html -->
 {% extends "inventory/base.html" %}
 
+{% block title %}Emails - Inventory Management{% endblock %}
+
 {% block content %}
-<div class="space-y-4">
-    {% for email in emails %}
-    <div class="bg-white rounded-lg shadow p-4">
-        <div class="flex justify-between items-start">
-            <div>
-                <h2 class="text-lg font-semibold">{{ email.subject }}</h2>
-                <div class="text-gray-600">From: {{ email.sender }}</div>
-                <div class="text-gray-500">{{ email.sent_at|date:"Y-m-d H:i" }}</div>
-                
-                {% if email.item %}
-                <div class="mt-2">
-                    <a href="{% url 'inventory:item_detail' email.item.id %}"
-                       class="text-blue-500 hover:underline"
-                       hx-get="{% url 'inventory:item_detail' email.item.id %}"
-                       hx-target="#modal-container">
-                        View Related Item
-                    </a>
+<div class="py-6">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold">Emails</h1>
+    </div>
+
+    <div class="space-y-4">
+        {% for email in emails %}
+        <div class="bg-white rounded-lg shadow p-4">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h3 class="text-lg font-semibold">
+                        {{ email.subject }}
+                    </h3>
+                    <p class="text-sm text-gray-600">
+                        From: {{ email.sender }}
+                    </p>
+                    <p class="text-sm text-gray-500">
+                        Sent: {{ email.sent_at|date:"Y-m-d H:i" }}
+                    </p>
                 </div>
+                {% if email.item %}
+                <a href="{% url 'inventory:item_detail' email.item.id %}"
+                   class="text-blue-500 hover:underline"
+                   hx-get="{% url 'inventory:item_detail' email.item.id %}"
+                   hx-target="#modal-container">
+                    View Item
+                </a>
                 {% endif %}
             </div>
-        </div>
 
-        {% if email.attachments.exists %}
-        <div class="mt-4">
-            <div class="text-sm font-medium text-gray-700 mb-2">Attachments:</div>
-            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                {% for attachment in email.attachments.all %}
+            {% if email.attachments.exists %}
+            <div class="mt-4">
+                <h4 class="text-sm font-medium mb-2">Attachments:</h4>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {% for attachment in email.attachments.all %}
+                    {% if attachment.file %}  <!-- Only show if file exists -->
                     <div class="border rounded p-2">
                         {% if attachment.is_image %}
-                            <img src="{{ attachment.file.url }}" 
+                            <img src="{{ attachment.file.url }}"
                                  alt="{{ attachment.filename }}"
-                                 class="w-full h-32 object-cover rounded cursor-pointer mb-2"
+                                 class="w-full h-32 object-cover rounded mb-2"
                                  hx-get="{% url 'inventory:image_preview' attachment.id %}?source_type=email&source_id={{ email.id }}"
                                  hx-target="#modal-container">
                         {% else %}
-                            <div class="w-full h-32 flex items-center justify-center bg-gray-100 rounded mb-2">
-                                <span class="text-4xl text-gray-400">
-                                    {% if "pdf" in attachment.content_type %}📄
-                                    {% elif "word" in attachment.content_type %}📝
-                                    {% else %}📎{% endif %}
-                                </span>
+                            <div class="w-full h-32 bg-gray-100 flex items-center justify-center rounded mb-2">
+                                <span class="text-gray-500">{{ attachment.content_type|default:"File" }}</span>
                             </div>
                         {% endif %}
-                        <div class="text-sm truncate" title="{{ attachment.filename }}">
+                        
+                        <div class="text-sm truncate">
                             {{ attachment.filename }}
                         </div>
-                        <a href="{{ attachment.file.url }}" 
+                        
+                        <a href="{{ attachment.file.url }}"
                            class="text-blue-500 text-sm hover:underline"
                            download>
                             Download
                         </a>
                     </div>
-                {% endfor %}
+                    {% endif %}
+                    {% endfor %}
+                </div>
             </div>
+            {% endif %}
         </div>
-        {% endif %}
+        {% empty %}
+        <div class="bg-white rounded-lg shadow p-4 text-center text-gray-500">
+            No emails found.
+        </div>
+        {% endfor %}
     </div>
-    {% empty %}
-    <div class="bg-white rounded-lg shadow p-4 text-center text-gray-500">
-        No emails found.
-    </div>
-    {% endfor %}
-
-    {% if is_paginated %}
-    <div class="mt-6 flex justify-center gap-2">
-        {% if page_obj.has_previous %}
-            <a href="?page={{ page_obj.previous_page_number }}" 
-               class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">
-                Previous
-            </a>
-        {% endif %}
-        
-        <span class="px-3 py-1">
-            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-        </span>
-        
-        {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}"
-               class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">
-                Next
-            </a>
-        {% endif %}
-    </div>
-    {% endif %}
 </div>
 {% endblock %}

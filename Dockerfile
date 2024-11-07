@@ -30,17 +30,20 @@ RUN apt-get update && apt-get install -y \
     postgresql-client \
     libjpeg62-turbo \
     libpng16-16 \
+    dos2unix \
     && rm -rf /var/lib/apt/lists/*
 
 # Set work directory
 WORKDIR /app
 
-# Create media directory 
+# Create media directory with proper permissions
 RUN mkdir -p /app/media/attachments && chmod -R 777 /app/media
+
+# Copy entrypoint script first and fix permissions
+COPY entrypoint.sh /app/
+RUN chmod +x /app/entrypoint.sh
 
 # Copy project files
 COPY . /app/
-RUN chmod +x /app/entrypoint.sh
 
-
-ENTRYPOINT ["/app/entrypoint.sh"]
+CMD ["/bin/bash", "/app/entrypoint.sh"]

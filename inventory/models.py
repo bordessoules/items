@@ -100,16 +100,21 @@ class Attachment(models.Model):
     email = models.ForeignKey(
         Email, 
         related_name='attachments', 
-        on_delete=models.SET_NULL,  # If email is deleted, keep the attachment
+        on_delete=models.SET_NULL,
         null=True,
         blank=True
     )
     file = models.FileField(
-        upload_to='attachments'
+        upload_to='attachments',
+        null=True,  # Allow null files
+        blank=True  # Make field optional
     )
     filename = models.CharField(max_length=255)
     content_type = models.CharField(max_length=100)
-    size = models.PositiveIntegerField(help_text="File size in bytes")
+    size = models.PositiveIntegerField(
+        help_text="File size in bytes",
+        default=0  # Add default value
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     source = models.CharField(
         max_length=20,
@@ -134,21 +139,22 @@ class Attachment(models.Model):
         return f"{self.filename} ({self.get_source_display()})"
 
     def save(self, *args, **kwargs):
-        if not self.filename:
+        if not self.filename and self.file:
             self.filename = os.path.basename(self.file.name)
         if not self.size and self.file:
             self.size = self.file.size
-        # If this attachment comes from an email, set source accordingly
         if self.email and not self.source:
             self.source = 'EMAIL'
-            # Add debug print
-            print(f"Saving attachment: email={self.email}, source={self.source}")
         super().save(*args, **kwargs)
 
     @property
     def is_image(self):
-        return self.content_type.startswith('image/')
+        return self.content_type.startswith('image/') if self.content_type else False
 
     @property
     def is_pdf(self):
         return self.content_type == 'application/pdf'
+
+    @property
+    def has_valid_file(self):
+        return bool(self.file and self.file.name)
