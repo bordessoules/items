@@ -31,4 +31,6 @@ urlpatterns = [
          views.image_preview, name='image_preview'),
     path('items/search/', 
          views.search_items, name='search_items'),
-]
+     path('items/<int:item_id>/label-section/', 
+          views.get_label_section, name='get_label_section'),
+     ]

@@ -226,12 +226,17 @@ def quick_create_label(request, item_id):
             label, created = Label.objects.get_or_create(name=name.strip())
             item = get_object_or_404(Item, pk=item_id)
             item.labels.add(label)
-            
+        
+        # Simplified context - no need for the HX-Trigger check
         context = {
             'item': item,
             'all_labels': Label.objects.all().order_by('name')
         }
-        return render(request, 'inventory/partials/item_label_section.html', context)
+        
+        response = render(request, 'inventory/partials/item_label_section.html', context)
+        response['HX-Trigger'] = 'refreshLabels'  # Add this line
+        return response
+        
     except Exception as e:
         return HttpResponse(str(e), status=400)
 
@@ -279,6 +284,15 @@ def delete_label(request, label_id):
         return HttpResponse("", status=200)
     except Exception as e:
         return HttpResponse(str(e), status=400)
+@require_http_methods(["GET"])
+def get_label_section(request, item_id):
+    """Get updated label section for an item."""
+    item = get_object_or_404(Item, pk=item_id)
+    context = {
+        'item': item,
+        'all_labels': Label.objects.all().order_by('name')
+    }
+    return render(request, 'inventory/partials/item_label_section.html', context)
 
 @require_http_methods(["GET"])
 def search_items(request):
