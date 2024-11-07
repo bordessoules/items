@@ -223,7 +223,7 @@ def quick_create_label(request, item_id):
     
     try:
         with transaction.atomic():
-            label = Label.objects.create(name=name)
+            label, created = Label.objects.get_or_create(name=name.strip())
             item = get_object_or_404(Item, pk=item_id)
             item.labels.add(label)
             

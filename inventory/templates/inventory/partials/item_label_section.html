@@ -1,38 +1,40 @@
-<!-- templates/inventory/partials/item_label_section.html -->
-<div class="label-management">
-    <!-- Existing Labels -->
+<div id="label-section-{{ item.id }}" class="label-management">
     <div class="current-labels">
         {% for label in item.labels.all %}
-        <span class="label">
-            {{ label.name }}
-            <button class="remove-label" hx-delete="{% url 'remove_label_from_item' item.id label.id %}"
-                    hx-target="#label-section-{{ item.id }}">×</button>
-        </span>
+            <span class="label-badge">
+                {{ label.name }}
+                <button hx-delete="{% url 'inventory:remove_label_from_item' item.id label.id %}"
+                        hx-target="#label-section-{{ item.id }}">
+                    ×
+                </button>
+            </span>
         {% endfor %}
     </div>
 
-    <!-- Label Controls - Always Visible -->
     <div class="label-controls">
-        <!-- New Label Input -->
-        <input type="text" name="new-label" placeholder="New label name" class="label-input"
-               id="new-label-{{ item.id }}">
+        <!-- New label input -->
+        <input type="text" 
+               id="new-label-{{ item.id }}" 
+               name="name" 
+               placeholder="New label name">
 
-        <!-- Existing Labels Dropdown -->
-        <select name="existing-label" class="label-select" id="existing-label-{{ item.id }}">
-            <option value="">Select existing label</option>
-            {% for label in all_labels %}
-                {% if label not in item.labels.all %}
-                <option value="{{ label.id }}">{{ label.name }}</option>
-                {% endif %}
-            {% endfor %}
-        </select>
-
-        <!-- Add Button -->
-        <button class="add-label-btn"
-                hx-post="{% url 'quick_create_label' item.id %}"
+        <button hx-post="{% url 'inventory:quick_create_label' item.id %}"
                 hx-include="#new-label-{{ item.id }}"
                 hx-target="#label-section-{{ item.id }}">
             Add Label
         </button>
+
+        <!-- Existing labels dropdown -->
+        <select name="label_id"
+                hx-post="{% url 'inventory:add_label_to_item' item.id %}"
+                hx-target="#label-section-{{ item.id }}"
+                hx-trigger="change">
+            <option value="">Select existing label</option>
+            {% for label in all_labels %}
+                {% if label not in item.labels.all %}
+                    <option value="{{ label.id }}">{{ label.name }}</option>
+                {% endif %}
+            {% endfor %}
+        </select>
     </div>
 </div>

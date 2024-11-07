@@ -1,19 +1,80 @@
-<!-- templates/inventory/item_list.html -->
 {% extends "inventory/base.html" %}
+
 {% block content %}
 <div class="mb-6">
     <div class="flex justify-between items-center mb-4">
         <h1 class="text-2xl font-bold">Items</h1>
-        <input type="text" 
-               placeholder="Search items..."
-               class="border rounded p-2"
-               hx-get="{% url 'inventory:search_items' %}"
-               hx-trigger="keyup changed delay:500ms"
-               hx-target="#items-list">
     </div>
-    
+
     <div id="items-list" class="space-y-4">
-        {% include "inventory/partials/item_list.html" %}
+        {% for item in items %}
+            <div id="item-{{ item.id }}" class="bg-white rounded-lg shadow p-4">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="text-lg font-semibold cursor-pointer hover:text-blue-600"
+                            hx-get="{% url 'inventory:item_detail' item.id %}"
+                            hx-target="#modal-container">
+                            {{ item.description }}
+                        </h3>
+                        
+                        <div id="item-label-section-{{ item.id }}">
+                            {% include "inventory/partials/item_label_section.html" with item=item all_labels=all_labels %}
+                        </div>
+
+                        {% if item.attachments.exists %}
+                            <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+                                {% for attachment in item.attachments.all %}
+                                    {% if attachment.is_image %}
+                                        <div class="relative group">
+                                            <img src="{{ attachment.file.url }}"
+                                                 alt="{{ attachment.filename }}"
+                                                 class="w-full h-32 object-cover rounded cursor-pointer"
+                                                 hx-get="{% url 'inventory:image_preview' attachment.id %}?source_type=item&source_id={{ item.id }}"
+                                                 hx-target="#modal-container">
+                                            <div class="text-xs truncate text-gray-500 mt-1">
+                                                {{ attachment.filename }}
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <div class="mt-2 text-sm text-gray-500">
+                            Created: {{ item.created_at|date:"Y-m-d H:i" }}
+                            {% if item.qr_codes.exists %}
+                                • QR Codes: {{ item.qr_codes.count }}
+                            {% endif %}
+                            {% if item.emails.exists %}
+                                • Emails: {{ item.emails.count }}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="bg-white rounded-lg shadow p-4 text-center text-gray-500">
+                No items found.
+            </div>
+        {% endfor %}
     </div>
+
+    {% if is_paginated %}
+        <div class="mt-6 flex justify-center gap-2">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}" 
+                   class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">Previous</a>
+            {% endif %}
+            
+            <span class="px-3 py-1">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+            
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}"
+                   class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">Next</a>
+            {% endif %}
+        </div>
+    {% endif %}
 </div>
 {% endblock %}
