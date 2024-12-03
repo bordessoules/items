@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.exceptions import ValidationError
+from inventory.services.vision import handle_vision_query
 import os
 
 class Item(models.Model):
@@ -19,6 +20,9 @@ class Item(models.Model):
             raise ValidationError("Cannot delete the last QR code from an item.")
         super().delete(*args, **kwargs)
 
+    def query_vision_ai(self, model_name, prompt):
+            return handle_vision_query(self, model_name, prompt)
+    
     def __str__(self):
         return f"Item {self.id}: {self.description}"
 
@@ -56,7 +60,7 @@ class AIdescription(models.Model):
 
     def __str__(self):
         return f"Response : {self.response} payload :{self.payload} for {self.item}"
-
+    
 
 class Label(models.Model):
     """Label that can be applied to multiple items."""
@@ -157,6 +161,12 @@ class Attachment(models.Model):
             models.Index(fields=['source']),
         ]
 
+    def query_vision_ai(self, model_name, prompt):
+        response_tuple = handle_vision_query(self, model_name, prompt)
+        response, _ = response_tuple
+        self.AIdescription.create(response=response, payload={"model":model_name, "promt":prompt})
+        return response
+
     def __str__(self):
         return f"{self.filename} ({self.get_source_display()})"
 
@@ -180,3 +190,25 @@ class Attachment(models.Model):
     @property
     def has_valid_file(self):
         return bool(self.file and self.file.name)
+    
+class AIImgdescription(models.Model):
+    """AI-generated description for an item."""
+    attachment = models.ForeignKey(Attachment, related_name='AIdescription', on_delete=models.CASCADE)
+    response = models.CharField(
+        max_length=4096,
+        null=True,  # Allow null initially
+        blank=True,  # Allow blank in forms
+        default=""   # Provide empty string default
+    )
+    payload = models.CharField(
+        max_length=4096,
+        null=True,  # Allow null initially
+        blank=True,  # Allow blank in forms
+        default=""   # Provide empty string default
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Response : {self.response} payload :{self.payload} "
+    

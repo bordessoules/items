@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Item, QRCode, Label, Email, Attachment
+from .models import Item, QRCode, Label, Email, Attachment, AIImgdescription
 
 @admin.register(Item)
 class ItemAdmin(admin.ModelAdmin):
@@ -27,3 +27,7 @@ class AttachmentAdmin(admin.ModelAdmin):
     list_display = ('filename', 'content_type', 'size', 'created_at')
     list_filter = ('content_type',)
     search_fields = ('filename',)
+
+@admin.register(AIImgdescription)
+class AIImgdescriptionAdmin(admin.ModelAdmin):
+    list_display = ('attachment', 'payload', 'response')
