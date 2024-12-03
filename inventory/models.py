@@ -36,6 +36,28 @@ class QRCode(models.Model):
     def __str__(self):
         return f"QR {self.code} for {self.item}"
 
+class AIdescription(models.Model):
+    """AI-generated description for an item."""
+    item = models.ForeignKey(Item, related_name='AIdescription', on_delete=models.CASCADE)
+    response = models.CharField(
+        max_length=4096,
+        null=True,  # Allow null initially
+        blank=True,  # Allow blank in forms
+        default=""   # Provide empty string default
+    )
+    payload = models.CharField(
+        max_length=4096,
+        null=True,  # Allow null initially
+        blank=True,  # Allow blank in forms
+        default=""   # Provide empty string default
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Response : {self.response} payload :{self.payload} for {self.item}"
+
+
 class Label(models.Model):
     """Label that can be applied to multiple items."""
     name = models.CharField(max_length=50, unique=True)
