@@ -1,0 +1,80 @@
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="p-6">
+            {# Modal Header #}
+            <div class="flex justify-between items-start mb-4">
+                <h2 class="text-2xl font-bold">{{ email.subject|escape }}</h2>
+                <button class="text-gray-500 hover:text-gray-700"
+                        onclick="this.closest('.fixed').remove()">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="text-sm text-gray-600 mb-4">
+                <div>From: {{ email.sender|escape }}</div>
+                <div>Sent: {{ email.sent_at|date:"Y-m-d H:i" }}</div>
+            </div>
+
+            {# Related Item Section #}
+            {% if email.item %}
+                <div class="mb-4 p-3 bg-gray-50 rounded">
+                    <h3 class="font-medium mb-2">Related Item</h3>
+                    <a href="{% url 'inventory:item_detail' email.item.id %}"
+                       class="text-blue-600 hover:underline">
+                        {{ email.item.description|escape }}
+                    </a>
+                </div>
+            {% endif %}
+            
+            {# Email Body #}
+            <div class="mb-6 whitespace-pre-wrap">
+                {{ email.body|escape }}
+            </div>
+
+            {# Attachments Section #}
+            {% if email.attachments.exists %}
+                <div class="border-t pt-4">
+                    <h3 class="font-semibold mb-2">Attachments:</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {% for attachment in email.attachments.all %}
+                            <div class="border rounded p-2">
+                                {% if attachment.is_image %}
+                                    <img src="{{ attachment.file.url }}"
+                                         alt="{{ attachment.filename }}"
+                                         class="w-full h-32 object-cover rounded cursor-pointer mb-2"
+                                         hx-get="{% url 'inventory:image_preview' attachment.id %}?source_type=email&source_id={{ email.id }}"
+                                         hx-target="#modal-container">
+                                {% endif %}
+                                <div class="text-sm truncate">{{ attachment.filename|escape }}</div>
+                                <a href="{{ attachment.file.url }}"
+                                   class="text-blue-500 text-sm hover:underline"
+                                   download>Download</a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            {# Related Emails Section #}
+            {% if related_emails %}
+                <div class="border-t pt-4 mt-6">
+                    <h3 class="font-semibold mb-2">Related Emails:</h3>
+                    <div class="space-y-2">
+                        {% for related_email in related_emails %}
+                            <div class="p-2 hover:bg-gray-50 rounded cursor-pointer"
+                                 hx-get="{% url 'inventory:email_detail_modal' related_email.id %}"
+                                 hx-target="#modal-container">
+                                <div class="font-medium">{{ related_email.subject|escape }}</div>
+                                <div class="text-sm text-gray-500">
+                                    {{ related_email.sent_at|date:"Y-m-d H:i" }}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>

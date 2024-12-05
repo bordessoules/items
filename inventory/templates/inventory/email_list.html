@@ -1,78 +1,90 @@
 {% extends "inventory/base.html" %}
-
-{% block title %}Emails - Inventory Management{% endblock %}
-
 {% block content %}
-<div class="py-6">
+<div class="container mx-auto px-4 py-6">
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold">Emails</h1>
+        
+        <div class="flex items-center space-x-4">
+            <div class="relative">
+                <input
+                    type="text"
+                    name="search"
+                    placeholder="Search emails..."
+                    class="w-64 px-4 py-2 border rounded-lg"
+                    hx-get="/api/emails/search-html/"
+                    hx-trigger="keyup changed delay:500ms"
+                    hx-target="#emails-list"
+                    hx-params="*"
+                    hx-indicator="#loading-indicator"
+                >
+            </div>
+        </div>
     </div>
 
-    <div class="space-y-4">
-        {% for email in emails %}
-        <div class="bg-white rounded-lg shadow p-4">
-            <div class="flex justify-between items-start">
-                <div>
-                    <h3 class="text-lg font-semibold">
-                        {{ email.subject }}
-                    </h3>
-                    <p class="text-sm text-gray-600">
-                        From: {{ email.sender }}
-                    </p>
-                    <p class="text-sm text-gray-500">
-                        Sent: {{ email.sent_at|date:"Y-m-d H:i" }}
-                    </p>
-                </div>
-                {% if email.item %}
-                <a href="{% url 'inventory:item_detail' email.item.id %}"
-                   class="text-blue-500 hover:underline"
-                   hx-get="{% url 'inventory:item_detail' email.item.id %}"
-                   hx-target="#modal-container">
-                    View Item
-                </a>
-                {% endif %}
-            </div>
+    <div id="emails-list" class="space-y-4">
+        {% include "inventory/partials/email_list.html" %}
+    </div>
 
-            {% if email.attachments.exists %}
-            <div class="mt-4">
-                <h4 class="text-sm font-medium mb-2">Attachments:</h4>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {% for attachment in email.attachments.all %}
-                    {% if attachment.file %}  <!-- Only show if file exists -->
-                    <div class="border rounded p-2">
-                        {% if attachment.is_image %}
-                            <img src="{{ attachment.file.url }}"
-                                 alt="{{ attachment.filename }}"
-                                 class="w-full h-32 object-cover rounded mb-2"
-                                 hx-get="{% url 'inventory:image_preview' attachment.id %}?source_type=email&source_id={{ email.id }}"
-                                 hx-target="#modal-container">
-                        {% else %}
-                            <div class="w-full h-32 bg-gray-100 flex items-center justify-center rounded mb-2">
-                                <span class="text-gray-500">{{ attachment.content_type|default:"File" }}</span>
-                            </div>
+    {% if page_obj.paginator.num_pages > 1 %}
+        <div class="mt-6">
+            <div class="flex items-center justify-between bg-white border-t border-gray-200 px-4 py-3 sm:px-6">
+                <div class="flex justify-between flex-1 sm:hidden">
+                    {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode }}" 
+                           class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                            Previous
+                        </a>
+                    {% endif %}
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode }}" 
+                           class="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                            Next
+                        </a>
+                    {% endif %}
+                </div>
+                <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm text-gray-700">
+                            Showing
+                            <span class="font-medium">{{ page_obj.start_index }}</span>
+                            to
+                            <span class="font-medium">{{ page_obj.end_index }}</span>
+                            of
+                            <span class="font-medium">{{ page_obj.paginator.count }}</span>
+                            results
+                        </p>
+                    </div>
+                    <nav class="inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                        {% if page_obj.has_previous %}
+                            <a href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode }}" 
+                               class="relative inline-flex items-center px-2 py-2 text-gray-400 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50">
+                                Previous
+                            </a>
                         {% endif %}
                         
-                        <div class="text-sm truncate">
-                            {{ attachment.filename }}
-                        </div>
-                        
-                        <a href="{{ attachment.file.url }}"
-                           class="text-blue-500 text-sm hover:underline"
-                           download>
-                            Download
-                        </a>
-                    </div>
-                    {% endif %}
-                    {% endfor %}
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if num == page_obj.number %}
+                                <span class="relative z-10 inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 border border-blue-500 bg-blue-50">
+                                    {{ num }}
+                                </span>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                <a href="?page={{ num }}&{{ request.GET.urlencode }}" 
+                                   class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50">
+                                    {{ num }}
+                                </a>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                            <a href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode }}" 
+                               class="relative inline-flex items-center px-2 py-2 text-gray-400 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50">
+                                Next
+                            </a>
+                        {% endif %}
+                    </nav>
                 </div>
             </div>
-            {% endif %}
         </div>
-        {% empty %}
-        <div class="bg-white rounded-lg shadow p-4 text-center text-gray-500">
-            No emails found.
-        </div>
-        {% endfor %}
-    </div>
+    {% endif %}
 </div>
 {% endblock %}

@@ -10,13 +10,14 @@ from django.http import HttpResponse
 from django.db.models import Prefetch, Count
 from django.core.paginator import Paginator
 from django.db import transaction
+from django.db.models import Q
 
 from .models import Item, Email, Attachment, Label, QRCode
 
 # Base Views
 class BaseListView(ListView):
     """Base list view with common functionality."""
-    paginate_by = 50
+    paginate_by = 25
     
     def get_template_names(self):
         """Return appropriate template based on request type."""
@@ -42,10 +43,33 @@ class EmailListView(BaseListView):
 
     def get_queryset(self):
         """Get emails with related data prefetched."""
-        return (Email.objects
-                .prefetch_related('attachments')
-                .select_related('item')
-                .order_by('-sent_at'))
+        queryset = (Email.objects
+                   .prefetch_related(
+                       Prefetch('attachments'),
+                       Prefetch('item'),
+                   )
+                   .order_by('-sent_at'))
+        
+        # Handle search if implemented
+        search = self.request.GET.get('search', '').strip()
+        if search:
+            queryset = queryset.filter(
+                models.Q(subject__icontains=search) |
+                models.Q(sender__icontains=search) |
+                models.Q(body__icontains=search)
+            )
+            
+        return queryset
+    
+    def get_context_data(self, **kwargs):
+        """Add additional context for email list."""
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'total_count': Email.objects.count(),
+            'with_attachments_count': Email.objects.filter(attachments__isnull=False).distinct().count(),
+            'with_items_count': Email.objects.filter(item__isnull=False).count(),
+        })
+        return context
 
 class ItemListView(BaseListView):
     """Display list of inventory items."""
@@ -128,18 +152,35 @@ class AttachmentListView(BaseListView):
 
 # Detail Views
 class EmailDetailView(BaseDetailView):
-    """Display detailed view of an email."""
+    """Enhanced email detail view with related data."""
     model = Email
     template_name = 'inventory/email_detail.html'
-    partial_template_name = 'inventory/partials/email_detail.html'
+    partial_template_name = 'inventory/partials/email_detail_modal.html'
     context_object_name = 'email'
 
     def get_object(self):
-        """Get email with related data prefetched."""
+        """Get email with optimized prefetching."""
         return (Email.objects
-                .prefetch_related('attachments')
+                .prefetch_related(
+                    'attachments',
+                    'item__labels',
+                    'item__qr_codes'
+                )
                 .select_related('item')
                 .get(pk=self.kwargs['pk']))
+
+    def get_context_data(self, **kwargs):
+        """Add additional context for email detail."""
+        context = super().get_context_data(**kwargs)
+        context['related_emails'] = []
+        if self.object.item:
+            context['related_emails'] = (
+                Email.objects
+                .filter(item=self.object.item)
+                .exclude(pk=self.object.pk)
+                .order_by('-sent_at')[:5]
+            )
+        return context
 
 class ItemDetailView(BaseDetailView):
     """Display detailed view of an item."""
@@ -194,6 +235,7 @@ def image_preview(request, attachment_id):
     }
     
     return render(request, 'inventory/partials/image_preview_modal.html', context)
+
 @require_http_methods(["POST"])
 def create_label(request):
     """Create a new label and return updated labels list."""
@@ -304,3 +346,66 @@ def search_items(request):
     
     return render(request, 'inventory/partials/item_list.html', 
                  {'items': items, 'htmx': True})
+
+@require_http_methods(["GET"])
+def search_emails(request):
+    """Search emails and return results in HTML format."""
+    query = request.GET.get('q', '').strip()
+    emails = (Email.objects
+             .filter(
+                 Q(subject__icontains=query) |
+                 Q(sender__icontains=query) |
+                 Q(body__icontains=query)
+             )
+             .prefetch_related('attachments')
+             .select_related('item')
+             .order_by('-sent_at')[:10])
+    
+    return render(request, 'inventory/partials/email_list.html', 
+                 {'emails': emails})
+
+@require_http_methods(["GET"])
+def email_detail_modal(request, email_id):
+    """Show email detail in modal."""
+    email = get_object_or_404(
+        Email.objects
+        .prefetch_related('attachments', 'item__labels')
+        .select_related('item'),
+        pk=email_id
+    )
+    
+    context = {
+        'email': email,
+        'related_emails': (
+            Email.objects
+            .filter(item=email.item)
+            .exclude(pk=email.pk)
+            .order_by('-sent_at')[:5]
+            if email.item else []
+        )
+    }
+    
+    return render(request, 'inventory/partials/email_detail_modal.html', context)
+
+@require_http_methods(["GET"])
+def email_detail_modal(request, email_id):
+    """Show email detail in modal."""
+    email = get_object_or_404(
+        Email.objects
+        .prefetch_related('attachments', 'item__labels')
+        .select_related('item'),
+        pk=email_id
+    )
+    
+    context = {
+        'email': email,
+        'related_emails': (
+            Email.objects
+            .filter(item=email.item)
+            .exclude(pk=email.pk)
+            .order_by('-sent_at')[:5]
+            if email.item else []
+        )
+    }
+    
+    return render(request, 'inventory/partials/email_detail_modal.html', context)

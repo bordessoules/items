@@ -1,0 +1,55 @@
+{% for email in emails %}
+    <div id="email-{{ email.id }}" class="bg-white rounded-lg shadow p-4 mb-4">
+        <div class="flex justify-between items-start">
+            <div>
+                {# Email Header Section #}
+                <h3 class="text-lg font-semibold cursor-pointer hover:text-blue-600"
+                    hx-get="{% url 'inventory:email_detail_modal' email.id %}"
+                    hx-target="#modal-container">
+                    {{ email.subject|escape }}
+                </h3>
+                
+                {# Metadata Section #}
+                <div class="text-sm text-gray-600 mt-1">
+                    From: {{ email.sender|escape }}
+                    <span class="mx-2">•</span>
+                    {{ email.sent_at|date:"Y-m-d H:i" }}
+                </div>
+
+                {# Related Item Section - if exists #}
+                {% if email.item %}
+                    <div class="mt-2">
+                        <a href="{% url 'inventory:item_detail' email.item.id %}"
+                           class="text-blue-600 hover:underline text-sm">
+                            Related Item: {{ email.item.description|escape }}
+                        </a>
+                    </div>
+                {% endif %}
+
+                {# Attachments Section - if exists #}
+                {% if email.attachments.exists %}
+                    <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {% for attachment in email.attachments.all %}
+                            {% if attachment.is_image %}
+                                <div class="relative group">
+                                    <img src="{{ attachment.file.url }}"
+                                         alt="{{ attachment.filename }}"
+                                         class="w-full h-32 object-cover rounded cursor-pointer"
+                                         hx-get="{% url 'inventory:image_preview' attachment.id %}?source_type=email&source_id={{ email.id }}"
+                                         hx-target="#modal-container">
+                                    <div class="text-xs truncate text-gray-500 mt-1">
+                                        {{ attachment.filename|escape}}
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% empty %}
+    <div class="bg-white rounded-lg shadow p-4 text-center text-gray-500">
+        No emails found.
+    </div>
+{% endfor %}

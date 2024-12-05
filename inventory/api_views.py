@@ -165,12 +165,32 @@ class LabelViewSet(viewsets.ModelViewSet):
 
 class EmailViewSet(viewsets.ModelViewSet):
     """API endpoint for Email operations."""
-    queryset = Email.objects.prefetch_related('attachments')
+    queryset = Email.objects.prefetch_related('attachments').select_related('item')
     serializer_class = EmailSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    search_fields = ['subject', 'sender', 'email_uid']
+    search_fields = ['subject', 'sender', 'email_uid','body']
     ordering_fields = ['sent_at', 'created_at']
     ordering = ['-sent_at']
+
+    def get_queryset(self):
+        """Get emails with related data prefetched."""
+        return super().get_queryset().prefetch_related(
+            'attachments',
+            'item__labels',
+            'item__qr_codes'
+        )
+    @action(detail=False, methods=['get'], url_path='search-html', url_name='search-html')
+    def search_html(self, request):
+        """Return search results as HTML for HTMX requests."""
+        queryset = self.filter_queryset(self.get_queryset())[:10]
+        if request.headers.get('HX-Request'):
+            return render(
+                request,
+                'inventory/partials/email_list.html',
+                {'emails': queryset}
+            )
+        return Response(self.get_serializer(queryset, many=True).data)
+
 
 class AttachmentViewSet(viewsets.ModelViewSet):
     """API endpoint for Attachment operations."""

@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Basic meta tags for proper rendering and character encoding -->    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Inventory Management{% endblock %}</title>
     
-    <!-- HTMX -->
+    <!-- HTMX library for dynamic interactions without full page reloads -->
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     
     <!-- Tailwind CSS -->
@@ -15,8 +16,9 @@
     {% csrf_token %}
 </head>
 <body class="bg-gray-100">
-    <!-- Navigation -->
+    <!-- Navigation container with consistent spacing -->
     <div class="container mx-auto px-4 py-3">
+        <!-- Navigation links with dynamic highlighting based on current page -->
         <nav class="flex space-x-4">
             <a href="{% url 'inventory:email_list' %}" 
                class="text-gray-700 hover:text-gray-900 {% if request.resolver_match.view_name == 'inventory:email_list' %}font-semibold{% endif %}">
@@ -37,15 +39,17 @@
         </nav>
     </div>
 
-    <!-- Main Content -->
-    <main class="container mx-auto px-4" role="main">
+    <!-- Main content container for page-specific content -->
+    <div class="container mx-auto px-4" role="main">
         {% block content %}{% endblock %}
-    </main>
+    </div>
 
-    <!-- Modal Container -->
+    <!-- Modal container for dynamic content loading -->
+    <!-- This div remains empty until HTMX loads content into it -->
     <div id="modal-container"></div>
 
-    <!-- Loading Indicator -->
+    <!-- Loading indicator that appears during HTMX requests -->
+    <!-- The htmx-indicator class is automatically handled by HTMX -->
     <div id="loading-indicator" 
          class="htmx-indicator fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
          style="display: none;">
@@ -72,10 +76,15 @@
         // Handle modal escape key
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
-                const modal = document.querySelector('#modal-container');
-                if (modal && modal.children.length > 0) {
-                    modal.innerHTML = '';
-                }
+                const modal = document.querySelector('#modal-container > .fixed');
+                if (modal) modal.remove();
+            }
+        });
+
+        // Handle closing modal when clicking outside
+        document.addEventListener('click', function(e) {
+            if (e.target.matches('#modal-container > .fixed')) {
+                e.target.remove();
             }
         });
     </script>

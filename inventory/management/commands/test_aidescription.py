@@ -30,7 +30,7 @@ class Command(BaseCommand):
                     response = at.query_vision_ai(model, prompt)
                     if response:
                         self.stdout.write(self.style.SUCCESS('Vision AI Response:'))
-                        #self.stdout.write(str(response))
+                        self.stdout.write(str(response))
                     else:
                         self.stdout.write(
                             self.style.WARNING('No response received from Vision AI')
@@ -39,7 +39,6 @@ class Command(BaseCommand):
                     self.stdout.write(
                         self.style.ERROR(f'Error during Vision AI processing: {str(vision_error)}')
                     )
-                    return
 
         except Exception as e:
             self.stdout.write(
