@@ -54,10 +54,13 @@ class EmailListView(BaseListView):
         search = self.request.GET.get('search', '').strip()
         if search:
             queryset = queryset.filter(
-                models.Q(subject__icontains=search) |
-                models.Q(sender__icontains=search) |
-                models.Q(body__icontains=search)
-            )
+                Q(subject__icontains=search) |
+                Q(from_address__icontains=search) |
+                Q(body__icontains=search) |
+                Q(item__qr_codes__code__icontains=search) |
+                Q(item__labels__name__icontains=search) |
+                Q(attachments__name__icontains=search)
+            ).distinct()
             
         return queryset
     

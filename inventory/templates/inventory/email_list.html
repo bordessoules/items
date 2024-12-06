@@ -30,13 +30,13 @@
             <div class="flex items-center justify-between bg-white border-t border-gray-200 px-4 py-3 sm:px-6">
                 <div class="flex justify-between flex-1 sm:hidden">
                     {% if page_obj.has_previous %}
-                        <a href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode }}" 
+                        <a href="?page={{ page_obj.previous_page_number }}" 
                            class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
                             Previous
                         </a>
                     {% endif %}
                     {% if page_obj.has_next %}
-                        <a href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode }}" 
+                        <a href="?page={{ page_obj.next_page_number }}" 
                            class="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
                             Next
                         </a>
@@ -56,7 +56,7 @@
                     </div>
                     <nav class="inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
                         {% if page_obj.has_previous %}
-                            <a href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode }}" 
+                            <a href="?page={{ page_obj.previous_page_number }}" 
                                class="relative inline-flex items-center px-2 py-2 text-gray-400 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50">
                                 Previous
                             </a>
@@ -68,7 +68,7 @@
                                     {{ num }}
                                 </span>
                             {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                                <a href="?page={{ num }}&{{ request.GET.urlencode }}" 
+                                <a href="?page={{ num }}" 
                                    class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50">
                                     {{ num }}
                                 </a>
@@ -76,7 +76,7 @@
                         {% endfor %}
 
                         {% if page_obj.has_next %}
-                            <a href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode }}" 
+                            <a href="?page={{ page_obj.next_page_number }}" 
                                class="relative inline-flex items-center px-2 py-2 text-gray-400 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50">
                                 Next
                             </a>
