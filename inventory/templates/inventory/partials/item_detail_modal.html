@@ -46,13 +46,20 @@
                         <div class="border rounded p-2">
                             {% if attachment.is_image %}
                                 <img src="{{ attachment.file.url }}" 
-                                     alt="{{ attachment.filename }}"
-                                     class="w-full h-32 object-cover rounded mb-2">
+                                        alt="{{ attachment.filename }}"
+                                        class="w-full h-32 object-cover rounded mb-2">
+                                <!-- Add AI Description -->
+                                {% if attachment.AIdescription.exists %}
+                                    <div class="text-sm text-gray-600 mt-2">
+                                        <p class="font-medium">AI Analysis:</p>
+                                        <p>{{ attachment.AIdescription.first.response }}</p>
+                                    </div>
+                                {% endif %}
                             {% endif %}
                             <div class="text-sm truncate">{{ attachment.filename }}</div>
                             <a href="{{ attachment.file.url }}" 
-                               class="text-blue-500 text-sm hover:underline"
-                               download>
+                                class="text-blue-500 text-sm hover:underline"
+                                download>
                                 Download
                             </a>
                         </div>

@@ -82,22 +82,31 @@ class ItemListView(BaseListView):
     context_object_name = 'items'
 
     def get_queryset(self):
-        """Get items with related data prefetched."""
-        queryset = (Item.objects
-                .prefetch_related('labels', 'qr_codes', 
-                                'attachments', 'emails')
-                .order_by('-created_at'))
+        # Get base queryset of all items with prefetched related data
+        queryset = Item.objects.prefetch_related(
+            Prefetch('attachments'),
+            'labels',
+            'qr_codes',
+            'emails'
+        )
         
-        search = self.request.GET.get('search', '').strip()
-        if search:
-            queryset = queryset.filter(
-                Q(description__icontains=search) |
-                Q(qr_codes__code__icontains=search) |
-                Q(labels__name__icontains=search) |
-                Q(emails__subject__icontains=search)
-            ).distinct()
+        search_query = self.request.GET.get('q')
+        
+        if search_query:
+            # Filter items by multiple fields across related models
+            queryset = (queryset.filter(
+                Q(description__icontains=search_query) |
+                Q(attachments__ai_description__icontains=search_query) |
+                Q(qr_codes__code__icontains=search_query) |
+                Q(labels__name__icontains=search_query) |
+                Q(emails__subject__icontains=search_query) |
+                Q(emails__sender__icontains=search_query)
+            )
+            .select_related('attachments')
+            .distinct())
         
         return queryset
+    
     def get_context_data(self, **kwargs):
         """Add labels to context for the dropdown."""
         context = super().get_context_data(**kwargs)
@@ -351,19 +360,32 @@ def get_label_section(request, item_id):
 
 @require_http_methods(["GET"])
 def search_items(request):
-         """Search items and return results."""
-         query = request.GET.get('q', '')
-         items = (Item.objects
-                  .filter(
-                      Q(description__icontains=query) |
-                      Q(qr_codes__code__icontains=query) |
-                      Q(labels__name__icontains=query)
-                  )
-                  .prefetch_related('labels', 'attachments', 'qr_codes')
-                  .distinct()[:10])
+    """Search items and return results."""
+    query = request.GET.get('q', '')
+    print(f"Search query: {query}")
     
-         return render(request, 'inventory/partials/item_list.html', 
-                      {'items': items, 'htmx': True})
+    items = (Item.objects
+             .prefetch_related(
+                 'attachments__AIdescription',  # Follows Item -> Attachment -> AIdescription
+                 'labels',                      # Gets all labels for each item
+                 'qr_codes',                    # Gets all QR codes for each item
+                 'emails'                       # Gets all emails for each item
+             )
+             .filter(
+                 Q(description__icontains=query) |
+                 Q(attachments__AIdescription__response__icontains=query) |
+                 Q(qr_codes__code__icontains=query) |
+                 Q(labels__name__icontains=query) |
+                 Q(emails__subject__icontains=query) |
+                 Q(emails__sender__icontains=query)
+             )
+             .distinct()[:10])
+    
+    print(f"SQL Query: {items.query}")
+    print(f"Results count: {items.count()}")
+    
+    return render(request, 'inventory/partials/item_list.html', 
+                 {'items': items, 'htmx': True})
 
 @require_http_methods(["GET"])
 def search_emails(request):
