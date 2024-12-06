@@ -67,6 +67,13 @@
                                     class="w-full h-32 object-cover rounded cursor-pointer mb-2"
                                     hx-get="{% url 'inventory:image_preview' attachment.id %}?source_type=item&source_id={{ item.id }}"
                                     hx-target="#modal-container">
+                                <!-- Add AI Description -->
+                                {% if attachment.AIdescription.exists %}
+                                    <div class="text-sm text-gray-600 mt-2">
+                                        <p class="font-medium">AI Analysis:</p>
+                                        <p>{{ attachment.AIdescription.first.response }}</p>
+                                    </div>
+                                {% endif %}
                             {% endif %}
                             <div class="text-sm truncate">{{ attachment.filename }}</div>
                             <a href="{{ attachment.file.url }}" 

@@ -8,13 +8,12 @@ class Command(BaseCommand):
     
     def handle(self, *args, **options):
         try:
-            # Get attachment with error handling
-            attachment_id = 9
+            # Get all attachments
             try:
-                att = Attachment.objects.all()
+                attachments = Attachment.objects.all()
             except ObjectDoesNotExist:
                 self.stdout.write(
-                    self.style.ERROR(f'Error: Attachment with ID {attachment_id} not found')
+                    self.style.ERROR('Error: No attachments found in database')
                 )
                 return
 
@@ -22,12 +21,13 @@ class Command(BaseCommand):
             model = "pixtral-12b-2409"
             prompt = "quel est l'objet photographié ? pense à bien lister tout le texte et tous les codes-barres que tu vois. Pas de bla-bla. Seul l'objet m'intéresse, pas la personne qui le tient ni l'arrière-plan. "
 
-            for at in att:
-                if at.AIdescription.exists():
+            for attachment in attachments:
+                if attachment.AIdescription.exists():
+                    self.stdout.write('Checking' + attachment.name)
                     continue
                 # Call vision AI with error handling
                 try:
-                    response = at.query_vision_ai(model, prompt)
+                    response = attachment.query_vision_ai(model, prompt)
                     if response:
                         self.stdout.write(self.style.SUCCESS('Vision AI Response:'))
                         self.stdout.write(str(response))
