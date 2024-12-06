@@ -1,6 +1,6 @@
 {% if attachments.exists %}
     <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
-        {% for attachment in attachments %}
+        {% for attachment in attachments.all %}
             {% if attachment.is_image %}
                 <div class="relative group">
                     <img src="{{ attachment.file.url }}"

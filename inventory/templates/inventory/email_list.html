@@ -24,67 +24,6 @@
     <div id="emails-list" class="space-y-4">
         {% include "inventory/partials/email_list.html" %}
     </div>
-
-    {% if page_obj.paginator.num_pages > 1 %}
-        <div class="mt-6">
-            <div class="flex items-center justify-between bg-white border-t border-gray-200 px-4 py-3 sm:px-6">
-                <div class="flex justify-between flex-1 sm:hidden">
-                    {% if page_obj.has_previous %}
-                        <a href="?page={{ page_obj.previous_page_number }}" 
-                           class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
-                            Previous
-                        </a>
-                    {% endif %}
-                    {% if page_obj.has_next %}
-                        <a href="?page={{ page_obj.next_page_number }}" 
-                           class="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
-                            Next
-                        </a>
-                    {% endif %}
-                </div>
-                <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-                    <div>
-                        <p class="text-sm text-gray-700">
-                            Showing
-                            <span class="font-medium">{{ page_obj.start_index }}</span>
-                            to
-                            <span class="font-medium">{{ page_obj.end_index }}</span>
-                            of
-                            <span class="font-medium">{{ page_obj.paginator.count }}</span>
-                            results
-                        </p>
-                    </div>
-                    <nav class="inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-                        {% if page_obj.has_previous %}
-                            <a href="?page={{ page_obj.previous_page_number }}" 
-                               class="relative inline-flex items-center px-2 py-2 text-gray-400 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50">
-                                Previous
-                            </a>
-                        {% endif %}
-                        
-                        {% for num in page_obj.paginator.page_range %}
-                            {% if num == page_obj.number %}
-                                <span class="relative z-10 inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 border border-blue-500 bg-blue-50">
-                                    {{ num }}
-                                </span>
-                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                                <a href="?page={{ num }}" 
-                                   class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50">
-                                    {{ num }}
-                                </a>
-                            {% endif %}
-                        {% endfor %}
-
-                        {% if page_obj.has_next %}
-                            <a href="?page={{ page_obj.next_page_number }}" 
-                               class="relative inline-flex items-center px-2 py-2 text-gray-400 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50">
-                                Next
-                            </a>
-                        {% endif %}
-                    </nav>
-                </div>
-            </div>
-        </div>
-    {% endif %}
+    {% include "inventory/partials/pagination.html" %}
 </div>
 {% endblock %}

@@ -1,11 +1,23 @@
 {% extends "inventory/base.html" %}
 
 {% block content %}
-<div class="mb-6">
-    <div class="flex justify-between items-center mb-4">
-        <h1 class="text-2xl font-bold">Items</h1>
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold">Items</h1>
+    <div class="flex items-center space-x-4">
+        <div class="relative">
+            <input
+                type="text"
+                name="q"
+                placeholder="Search items..."
+                class="w-64 px-4 py-2 border rounded-lg"
+                hx-get="{% url 'inventory:search_items' %}"
+                hx-trigger="keyup changed delay:500ms"
+                hx-target="#items-list"
+                hx-params="*"
+            >
+        </div>
     </div>
-
+</div>
     <div id="items-list" class="space-y-4">
         {% for item in items %}
             <div id="item-{{ item.id }}" class="bg-white rounded-lg shadow p-4">
@@ -27,24 +39,7 @@
                             {% include "inventory/partials/item_label_section.html" with item=item all_labels=all_labels %}
                         </div>
 
-                        {% if item.attachments.exists %}
-                            <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
-                                {% for attachment in item.attachments.all %}
-                                    {% if attachment.is_image %}
-                                        <div class="relative group">
-                                            <img src="{{ attachment.file.url }}"
-                                                 alt="{{ attachment.filename }}"
-                                                 class="w-full h-32 object-cover rounded cursor-pointer"
-                                                 hx-get="{% url 'inventory:image_preview' attachment.id %}?source_type=item&source_id={{ item.id }}"
-                                                 hx-target="#modal-container">
-                                            <div class="text-xs truncate text-gray-500 mt-1">
-                                                {{ attachment.filename }}
-                                            </div>
-                                        </div>
-                                    {% endif %}
-                                {% endfor %}
-                            </div>
-                        {% endif %}
+                        {% include "inventory/partials/image_grid.html" with attachments=item.attachments source_type='item' source_id=item.id %}
 
                         <div class="mt-2 text-sm text-gray-500">
                             Created: {{ item.created_at|date:"Y-m-d H:i" }}
@@ -64,23 +59,6 @@
             </div>
         {% endfor %}
     </div>
-
-    {% if is_paginated %}
-        <div class="mt-6 flex justify-center gap-2">
-            {% if page_obj.has_previous %}
-                <a href="?page={{ page_obj.previous_page_number }}" 
-                   class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">Previous</a>
-            {% endif %}
-            
-            <span class="px-3 py-1">
-                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-            </span>
-            
-            {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}"
-                   class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">Next</a>
-            {% endif %}
-        </div>
-    {% endif %}
+    {% include "inventory/partials/pagination.html" %}
 </div>
 {% endblock %}
