@@ -1,9 +1,11 @@
 {% extends "inventory/base.html" %}
 
 {% block content %}
+<!-- Header section with search -->
 <div class="flex justify-between items-center mb-6">
     <h1 class="text-2xl font-bold">Items</h1>
     <div class="flex items-center space-x-4">
+        <!-- Search input with HTMX live search -->
         <div class="relative">
             <input
                 type="text"
@@ -18,47 +20,48 @@
         </div>
     </div>
 </div>
-    <div id="items-list" class="space-y-4">
-        {% for item in items %}
-            <div id="item-{{ item.id }}" class="bg-white rounded-lg shadow p-4">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <h3 class="text-lg font-semibold cursor-pointer hover:text-blue-600"
-                            hx-get="{% url 'inventory:item_detail' item.id %}"
-                            hx-target="#modal-container">
-                            {{ item.description }}
-                        </h3>
-			<div>
-			    {% if item.emails.exists %}
-			        {% for email in item.emails.all %}
-			            <p>{{ email.body }}</p>
-				{% endfor %}
-			    {% endif %}
-			</div>
-                        <div id="item-label-section-{{ item.id }}">
-                            {% include "inventory/partials/item_label_section.html" with item=item all_labels=all_labels %}
-                        </div>
 
-                        {% include "inventory/partials/image_grid.html" with attachments=item.attachments source_type='item' source_id=item.id %}
+<!-- Main items grid container -->
+<div id="items-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    {% for item in items %}
+        <!-- Individual item card -->
+        <div id="item-{{ item.id }}" class="bg-white rounded-lg shadow p-4">
+            <div>
+                <!-- Item description header with modal trigger -->
+                <h3 class="text-lg font-semibold cursor-pointer hover:text-blue-600 truncate"
+                    hx-get="{% url 'inventory:item_detail' item.id %}"
+                    hx-target="#modal-container">
+                    {{ item.description }}
+                </h3>
+                
+                <!-- Labels section -->
+                <div id="item-label-section-{{ item.id }}">
+                    {% include "inventory/partials/item_label_section.html" with item=item all_labels=all_labels %}
+                </div>
 
-                        <div class="mt-2 text-sm text-gray-500">
-                            Created: {{ item.created_at|date:"Y-m-d H:i" }}
-                            {% if item.qr_codes.exists %}
-                                • QR Codes: {{ item.qr_codes.count }}
-                            {% endif %}
-                            {% if item.emails.exists %}
-                                • Emails: {{ item.emails.count }}
-                            {% endif %}
-                        </div>
-                    </div>
+                <!-- Image grid for attachments -->
+                {% include "inventory/partials/image_grid.html" with attachments=item.attachments source_type='item' source_id=item.id %}
+
+                <!-- Item metadata footer -->
+                <div class="mt-2 text-sm text-gray-500">
+                    Created: {{ item.created_at|date:"Y-m-d H:i" }}
+                    {% if item.qr_codes.exists %}
+                        • QR Codes: {{ item.qr_codes.count }}
+                    {% endif %}
+                    {% if item.emails.exists %}
+                        • Emails: {{ item.emails.count }}
+                    {% endif %}
                 </div>
             </div>
-        {% empty %}
-            <div class="bg-white rounded-lg shadow p-4 text-center text-gray-500">
-                No items found.
-            </div>
-        {% endfor %}
-    </div>
-    {% include "inventory/partials/pagination.html" %}
+        </div>
+    {% empty %}
+        <!-- Empty state message -->
+        <div class="col-span-full bg-white rounded-lg shadow p-4 text-center text-gray-500">
+            No items found.
+        </div>
+    {% endfor %}
 </div>
+
+<!-- Pagination component -->
+{% include "inventory/partials/pagination.html" %}
 {% endblock %}

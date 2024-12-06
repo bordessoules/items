@@ -1,22 +1,24 @@
-{% for email in emails %}
-    <div id="email-{{ email.id }}" class="bg-white rounded-lg shadow p-4 mb-4">
-        <div class="flex justify-between items-start">
+<!-- Main grid container with responsive columns -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    {% for email in emails %}
+        <!-- Individual email card -->
+        <div id="email-{{ email.id }}" class="bg-white rounded-lg shadow p-4">
             <div>
-                {# Email Header Section #}
-                <h3 class="text-lg font-semibold cursor-pointer hover:text-blue-600"
+                <!-- Email subject header with HTMX modal trigger -->
+                <h3 class="text-lg font-semibold cursor-pointer hover:text-blue-600 truncate"
                     hx-get="{% url 'inventory:email_detail_modal' email.id %}"
                     hx-target="#modal-container">
                     {{ email.subject|escape }}
                 </h3>
                 
-                {# Metadata Section #}
+                <!-- Email metadata section -->
                 <div class="text-sm text-gray-600 mt-1">
                     From: {{ email.sender|escape }}
                     <span class="mx-2">•</span>
                     {{ email.sent_at|date:"Y-m-d H:i" }}
                 </div>
 
-                {# Related Item Section - if exists #}
+                <!-- Related item link if exists -->
                 {% if email.item %}
                     <div class="mt-2">
                         <a href="{% url 'inventory:item_detail' email.item.id %}"
@@ -26,15 +28,16 @@
                     </div>
                 {% endif %}
 
-                {# Attachments Section - if exists #}
+                <!-- Image attachments grid -->
                 {% if email.attachments.exists %}
-                    <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="mt-4 grid grid-cols-2 gap-2">
                         {% for attachment in email.attachments.all %}
                             {% if attachment.is_image %}
+                                <!-- Individual image preview with modal trigger -->
                                 <div class="relative group">
                                     <img src="{{ attachment.file.url }}"
                                          alt="{{ attachment.filename }}"
-                                         class="w-full h-32 object-cover rounded cursor-pointer"
+                                         class="w-full h-24 object-cover rounded cursor-pointer"
                                          hx-get="{% url 'inventory:image_preview' attachment.id %}?source_type=email&source_id={{ email.id }}"
                                          hx-target="#modal-container">
                                     <div class="text-xs truncate text-gray-500 mt-1">
@@ -47,9 +50,10 @@
                 {% endif %}
             </div>
         </div>
-    </div>
-{% empty %}
-    <div class="bg-white rounded-lg shadow p-4 text-center text-gray-500">
-        No emails found.
-    </div>
-{% endfor %}
+    {% empty %}
+        <!-- Empty state message -->
+        <div class="col-span-full bg-white rounded-lg shadow p-4 text-center text-gray-500">
+            No emails found.
+        </div>
+    {% endfor %}
+</div>
