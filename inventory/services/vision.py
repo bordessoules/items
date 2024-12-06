@@ -18,9 +18,7 @@ class VisionService:
     def __init__(self):
         """Initialize Mistral client with API configuration"""
         try:
-            # self.client = Mistral(api_key=)
             self.client = Mistral(api_key=os.getenv('MISTRAL_API_KEY'))
-            #print(os.getenv('MISTRAL_API_KEY'))
             self.model = "pixtral-12b-2409"
         except KeyError:
             raise EnvironmentError("MISTRAL_API_KEY not found in environment variables")
