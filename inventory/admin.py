@@ -1,5 +1,7 @@
 from django.contrib import admin
 from .models import Item, QRCode, Label, Email, Attachment, AIImgdescription
+from .management.commands.generate_llava_descriptions import Command as LLaVACommand
+from .management.commands.test_aidescription import Command as PixTralCommand
 
 @admin.register(Item)
 class ItemAdmin(admin.ModelAdmin):
@@ -31,3 +33,4 @@ class AttachmentAdmin(admin.ModelAdmin):
 @admin.register(AIImgdescription)
 class AIImgdescriptionAdmin(admin.ModelAdmin):
     list_display = ('attachment', 'payload', 'response')
+    

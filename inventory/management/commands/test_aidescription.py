@@ -16,6 +16,7 @@ class Command(BaseCommand):
                     self.style.ERROR('Error: No attachments found in database')
                 )
                 return
+            self.stdout.write(f"analysing  {attachments.__sizeof__} attachments")
 
             # Vision AI parameters
             model = "pixtral-12b-2409"
@@ -23,8 +24,12 @@ class Command(BaseCommand):
 
             for attachment in attachments:
                 if attachment.AIdescription.exists():
-                    self.stdout.write('Checking' + attachment.name)
+                    self.stdout.write(f"Skipping {attachment.filename}")
                     continue
+                    
+                #item_info = f"from item {attachment.item.pk}" if attachment.item else "(no item)"
+                #self.stdout.write(f"Checking {attachment.filename} {item_info}")
+                self.stdout.write(f"Checking {attachment.filename}")
                 # Call vision AI with error handling
                 try:
                     response = attachment.query_vision_ai(model, prompt)

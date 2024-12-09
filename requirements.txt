@@ -8,3 +8,4 @@ python-magic>=0.4,<1.0
 python-dotenv>=0.19,<1.0
 gunicorn>=20.1,<21.0
 mistralai>=0.0.13
+requests

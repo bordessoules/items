@@ -9,6 +9,11 @@ class Item(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     labels = models.ManyToManyField('Label', related_name='items')
+    ai_aggregated_description = models.TextField(
+        null=True,
+        blank=True,
+        help_text="Aggregated AI descriptions from all attachments"
+    )    
     def clean(self):
         # Only run this validation if the item already exists (has an ID)
         if self.id and not self.qr_codes.exists():
