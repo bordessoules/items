@@ -110,7 +110,7 @@ class Command(BaseCommand):
             self.stdout.write(f"Processing {items.count()} items")
 
             for item in items:
-                if not options['force'] and item.AIdescription.exists():
+                if not options['force'] and item.item_ai_descriptions.exists():
                     self.stdout.write(f"Skipping item {item.id} - analysis exists")
                     continue
 

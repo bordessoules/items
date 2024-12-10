@@ -23,7 +23,7 @@ class Command(BaseCommand):
             prompt = "quel est l'objet photographié ? pense à bien lister tout le texte et tous les codes-barres que tu vois. Pas de bla-bla. Seul l'objet m'intéresse, pas la personne qui le tient ni l'arrière-plan. "
 
             for attachment in attachments:
-                if attachment.AIdescription.exists():
+                if attachment.attachment_ai_descriptions.exists():
                     self.stdout.write(f"Skipping {attachment.filename}")
                     continue
                     

@@ -373,13 +373,13 @@ def search_items(request):
              )
              .filter(
                  Q(description__icontains=query) |
-                 Q(attachments__AIdescription__response__icontains=query) |
+                 Q(attachments__attachment_ai_descriptions__response__icontains=query) |
                  Q(qr_codes__code__icontains=query) |
                  Q(labels__name__icontains=query) |
                  Q(emails__subject__icontains=query) |
                  Q(emails__sender__icontains=query)
              )
-             .distinct()[:10])
+             .distinct())
     
     print(f"SQL Query: {items.query}")
     print(f"Results count: {items.count()}")

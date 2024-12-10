@@ -47,7 +47,7 @@ class QRCode(models.Model):
 
 class AIdescription(models.Model):
     """AI-generated description for an item."""
-    item = models.ForeignKey(Item, related_name='AIdescription', on_delete=models.CASCADE)
+    item = models.ForeignKey(Item, related_name='item_ai_descriptions', on_delete=models.CASCADE)
     response = models.CharField(
         max_length=4096,
         null=True,  # Allow null initially
@@ -198,7 +198,7 @@ class Attachment(models.Model):
     
 class AIImgdescription(models.Model):
     """AI-generated description for an item."""
-    attachment = models.ForeignKey(Attachment, related_name='AIdescription', on_delete=models.CASCADE)
+    attachment = models.ForeignKey(Attachment, related_name='attachment_ai_descriptions', on_delete=models.CASCADE)
     response = models.CharField(
         max_length=4096,
         null=True,  # Allow null initially

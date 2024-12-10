@@ -68,7 +68,7 @@ class Command(BaseCommand):
             self.stdout.write(f"Processing {attachments.count()} attachments")
 
             for attachment in attachments:
-                if not options['force'] and attachment.AIdescription.exists():
+                if not options['force'] and attachment.attachment_ai_descriptions.exists():
                     self.stdout.write(f"Skipping {attachment.filename} - description exists")
                     continue
 
