@@ -36,6 +36,18 @@
                 </div>
             </div>
 
+            <!--AI  item description -->
+            <div class="mb-6">
+                <h2 class="text-lg font-semibold mb-2">AI Analysis</h2>
+                <div class="bg-gray-50 p-4 rounded">
+                    {% if item.ai_aggregated_description %}
+                        {{ item.ai_aggregated_description|linebreaks }}
+                    {% else %}
+                        <p class="text-gray-500">No AI analysis available</p>
+                    {% endif %}
+                </div>
+            </div>
+
             <!-- Related Emails -->
             {% if item.emails.exists %}
             <div class="mb-6">

@@ -9,6 +9,11 @@
                 hx-target="#modal-container">
                 {{ item.description }}
             </h3>
+            {% if item.ai_aggregated_description %}
+                <div class="mt-2 text-sm text-gray-600">
+                    <p class="line-clamp-2">{{ item.ai_aggregated_description }}</p>
+                </div>
+            {% endif %}
             
             <!-- Label section -->
             <div id="item-label-section-{{ item.id }}">
