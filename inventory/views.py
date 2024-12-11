@@ -476,7 +476,7 @@ def refresh_ai_analysis(request, item_id):
 def refresh_attachment_ai(request, attachment_id):
     try:
         attachment = get_object_or_404(Attachment, pk=attachment_id)
-        response = attachment.query_vision_ai("pixtral-12b-2409", "Describe this image in detail")
+        response = attachment.query_vision_ai("pixtral-12b-2409", "Décris uniquement l'objet principal de cette image de manière factuelle (dimensions, couleurs, forme, matériau). Liste ensuite tous les textes et codes-barres visibles mot pour mot, sans interprétation. Ignore l'arrière-plan et toute personne présente dans l'image.")
         
         return render(request, 'inventory/partials/attachment_ai_description.html', {
             'description': response,
