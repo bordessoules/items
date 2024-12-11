@@ -15,13 +15,14 @@ class TextService:
         try:
             self.client = Mistral(api_key=os.getenv('MISTRAL_API_KEY'))
             self.model = "ministral-8b-latest"
-            self.default_prompt = """Analyze these images descriptions they should represent the same item but under diferent angles. 
-IMPORTANT:
-- Only include information explicitly mentioned in the descriptions
-- Do not make assumptions about brands or models
-- Focus on visible text, codes, and physical characteristics
-- If something is unclear, say "unclear" rather than guessing
-- List exact text/numbers seen, not interpretations"""
+            self.default_prompt = """Analysez ces images qui doivent représenter le même objet sous différents angles.
+                            IMPORTANT :
+
+                            Ne décrivez que les informations explicitement visibles dans les descriptions
+                            Ne faites aucune supposition sur les marques ou modèles
+                            Concentrez-vous sur les textes visibles, les codes et les caractéristiques physiques
+                            Si quelque chose n'est pas clair, indiquez "non visible" au lieu de faire des suppositions
+                            Listez les textes et nombres exactement comme ils apparaissent, sans interprétation"""
         except KeyError:
             raise EnvironmentError("MISTRAL_API_KEY not found in environment variables")
 

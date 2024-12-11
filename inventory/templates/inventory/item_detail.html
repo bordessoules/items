@@ -88,26 +88,39 @@
                                     class="w-full h-32 object-cover rounded cursor-pointer mb-2"
                                     hx-get="{% url 'inventory:image_preview' attachment.id %}?source_type=item&source_id={{ item.id }}"
                                     hx-target="#modal-container">
-                                <!-- Add AI Description -->
-                                {% if attachment.attachment_ai_descriptions.exists %}
-                                    <div class="text-sm text-gray-600 mt-2">
+                                
+                                <!-- AI Description -->
+                                <div id="attachment-ai-{{ attachment.id }}" class="text-sm text-gray-600 mt-2">
+                                    {% if attachment.attachment_ai_descriptions.exists %}
                                         <p class="font-medium">AI Analysis:</p>
                                         <p>{{ attachment.attachment_ai_descriptions.first.response }}</p>
-                                    </div>
-                                {% endif %}
+                                    {% endif %}
+                                </div>
                             {% endif %}
+                            
                             <div class="text-sm truncate">{{ attachment.filename }}</div>
-                            <a href="{{ attachment.file.url }}" 
-                               class="text-blue-500 text-sm hover:underline"
-                               download>
-                                Download
-                            </a>
+                            <div class="flex gap-2">
+                                <a href="{{ attachment.file.url }}" 
+                                   class="text-blue-500 text-sm hover:underline"
+                                   download>
+                                    Download
+                                </a>
+                                {% if attachment.is_image %}
+                                    <button 
+                                        class="text-green-500 text-sm hover:underline"
+                                        hx-post="{% url 'inventory:refresh_attachment_ai' attachment.id %}"
+                                        hx-target="#attachment-ai-{{ attachment.id }}"
+                                        hx-indicator="#refresh-spinner-{{ attachment.id }}">
+                                        <span class="htmx-indicator" id="refresh-spinner-{{ attachment.id }}">⟳</span>
+                                        <span class="htmx-indicator-none">↻ AI</span>
+                                    </button>
+                                {% endif %}
+                            </div>
                         </div>
                     {% endfor %}
                 </div>
             </div>
-            {% endif %}
-        </div>
+            {% endif %}        </div>
     </div>
 </div>
 
