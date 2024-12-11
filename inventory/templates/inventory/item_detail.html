@@ -14,7 +14,7 @@
 
             <!-- Labels -->
             <div class="mb-6">
-                <h2 class="text-lg font-semibold mb-2">Labels</h2>
+                <h2 class="text-lg font-semibold mb-2">Étiquettes</h2>
                 <div class="flex flex-wrap gap-2">
                     {% for label in item.labels.all %}
                         <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
@@ -26,7 +26,7 @@
 
             <!-- QR Codes -->
             <div class="mb-6">
-                <h2 class="text-lg font-semibold mb-2">QR Codes</h2>
+                <h2 class="text-lg font-semibold mb-2">Codes QR</h2>
                 <div class="flex flex-wrap gap-2">
                     {% for qr in item.qr_codes.all %}
                         <span class="bg-gray-100 px-3 py-1 rounded">
@@ -38,20 +38,29 @@
 
             <!--AI  item description -->
             <div class="mb-6">
-                <h2 class="text-lg font-semibold mb-2">AI Analysis</h2>
-                <div class="bg-gray-50 p-4 rounded">
-                    {% if item.ai_aggregated_description %}
-                        {{ item.ai_aggregated_description|linebreaks }}
-                    {% else %}
-                        <p class="text-gray-500">No AI analysis available</p>
-                    {% endif %}
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-lg font-semibold">Analyse IA</h2>
+                    <button 
+                        class="px-3 py-1 text-sm bg-blue-500 text-white rounded-full hover:bg-blue-600"
+                        hx-post="{% url 'inventory:refresh_ai_analysis' item.id %}"
+                        hx-target="#ai-description"
+                        hx-indicator="#refresh-spinner">
+                        <span class="htmx-indicator" id="refresh-spinner">
+                            Updating...
+                        </span>
+                        <span class="htmx-indicator-none">
+                            Actualiser l'analyse
+                        </span>
+                    </button>
+                </div>
+                <div id="ai-description" class="bg-gray-50 p-4 rounded">
+                    {% include "inventory/partials/ai_description.html" with description=item.ai_aggregated_description %}
                 </div>
             </div>
-
             <!-- Related Emails -->
             {% if item.emails.exists %}
             <div class="mb-6">
-                <h2 class="text-lg font-semibold mb-2">Related Emails</h2>
+                <h2 class="text-lg font-semibold mb-2">Emails associés</h2>
                 <div class="space-y-2">
                     {% for email in item.emails.all %}
                         <div class="border rounded p-3">
@@ -69,7 +78,7 @@
             <!-- Attachments -->
             {% if item.attachments.exists %}
             <div>
-                <h2 class="text-lg font-semibold mb-2">Attachments</h2>
+                <h2 class="text-lg font-semibold mb-2">Pièces jointes</h2>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {% for attachment in item.attachments.all %}
                         <div class="border rounded p-2">
@@ -102,6 +111,17 @@
     </div>
 </div>
 
+<!-- Change metadata -->
+<div class="text-sm text-gray-500">
+    Créé le : {{ item.created_at|date:"Y-m-d H:i" }}
+</div>
+
+<!-- Change counters -->
+{% if item.qr_codes.exists %}
+    • Codes QR : {{ item.qr_codes.count }}
+{% endif %}
+{% if item.emails.exists %}
+    • Emails : {{ item.emails.count }}
+{% endif %}
 <!-- Modal container for image previews -->
-<div id="modal-container"></div>
-{% endblock %}
+<div id="modal-container"></div>{% endblock %}

@@ -29,4 +29,6 @@ urlpatterns = [
     path('items/<int:item_id>/remove-label/<int:label_id>/', views.remove_label_from_item, name='remove_label_from_item'),
     path('items/search/', views.search_items, name='search_items'),
     path('items/<int:item_id>/label-section/', views.get_label_section, name='get_label_section'),
+    path('items/<int:item_id>/refresh-analysis/', views.refresh_ai_analysis, name='refresh_ai_analysis'),
+    path('attachments/<int:attachment_id>/refresh-ai/', views.refresh_attachment_ai, name='refresh_attachment_ai'),
 ]

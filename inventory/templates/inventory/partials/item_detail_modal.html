@@ -13,6 +13,23 @@
                 </button>
             </div>
 
+            <!-- AI Analysis -->
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="text-lg font-semibold">AI Analysis</h3>
+                    <button 
+                        class="px-2 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+                        hx-post="{% url 'inventory:refresh_ai_analysis' item.id %}"
+                        hx-target="#modal-ai-description"
+                        hx-indicator="#modal-refresh-spinner">
+                        <span class="htmx-indicator" id="modal-refresh-spinner">⟳</span>
+                        <span class="htmx-indicator-none">↻ AI</span>
+                    </button>
+                </div>
+                <div id="modal-ai-description" class="bg-gray-50 p-4 rounded">
+                    {% include "inventory/partials/ai_description.html" with description=item.ai_aggregated_description %}
+                </div>
+            </div>
             <!-- Labels -->
             <div class="mb-6">
                 <h3 class="text-lg font-semibold mb-2">Labels</h3>
@@ -40,7 +57,7 @@
             <!-- Attachments -->
             {% if item.attachments.exists %}
             <div>
-                <h3 class="text-lg font-semibold mb-2">Attachments</h3>
+                <h3 class="text-lg font-semibold mb-2">Pièces jointes</h3>
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {% for attachment in item.attachments.all %}
                         <div class="border rounded p-2">

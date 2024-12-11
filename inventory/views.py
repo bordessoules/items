@@ -11,6 +11,8 @@ from django.db.models import Prefetch, Count
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Q
+from django.core.management import call_command
+from django.http import JsonResponse
 
 from .models import Item, Email, Attachment, Label, QRCode
 
@@ -108,11 +110,17 @@ class ItemListView(BaseListView):
         return queryset
     
     def get_context_data(self, **kwargs):
-        """Add labels to context for the dropdown."""
+        """Add labels to context for the dropdown and handle AI descriptions."""
         context = super().get_context_data(**kwargs)
         context['all_labels'] = Label.objects.all().order_by('name')
-        return context
 
+        # Add AI description display handling
+        for item in context.get('object_list', []):
+            item.truncated_description = item.ai_aggregated_description[:150] if item.ai_aggregated_description else ''
+            item.needs_generation = not bool(item.ai_aggregated_description)
+    
+        return context
+    
 class LabelListView(BaseListView):
     """Display list of labels with their associated items."""
     model = Label
@@ -373,13 +381,14 @@ def search_items(request):
              )
              .filter(
                  Q(description__icontains=query) |
+                 Q(ai_aggregated_description__icontains=query) | 
                  Q(attachments__attachment_ai_descriptions__response__icontains=query) |
                  Q(qr_codes__code__icontains=query) |
                  Q(labels__name__icontains=query) |
                  Q(emails__subject__icontains=query) |
                  Q(emails__sender__icontains=query)
              )
-             .distinct())
+             .distinct().order_by('-created_at'))
     
     print(f"SQL Query: {items.query}")
     print(f"Results count: {items.count()}")
@@ -449,3 +458,29 @@ def email_detail_modal(request, email_id):
     }
     
     return render(request, 'inventory/partials/email_detail_modal.html', context)
+
+@require_http_methods(["POST"])
+def refresh_ai_analysis(request, item_id):
+    try:
+        call_command('update_item_descriptions', str(item_id), force=True)
+        item = get_object_or_404(Item, pk=item_id)
+        
+        # Return just the formatted description
+        return render(request, 'inventory/partials/ai_description.html', {
+            'description': item.ai_aggregated_description
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@require_http_methods(["POST"])
+def refresh_attachment_ai(request, attachment_id):
+    try:
+        attachment = get_object_or_404(Attachment, pk=attachment_id)
+        response = attachment.query_vision_ai("pixtral-12b-2409", "Describe this image in detail")
+        
+        return render(request, 'inventory/partials/attachment_ai_description.html', {
+            'description': response,
+            'attachment': attachment
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

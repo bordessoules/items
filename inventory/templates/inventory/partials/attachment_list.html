@@ -22,28 +22,41 @@
             </div>
         </div>
     {% endif %}
-
-    <div class="p-3">
-        <div class="text-sm font-medium truncate" title="{{ attachment.filename }}">
-            {{ attachment.filename }}
-        </div>
-        <div class="text-xs text-gray-500 mt-1">
-            {{ attachment.size|filesizeformat }}
-        </div>
+      <div class="p-3">
+          <div class="text-sm font-medium truncate" title="{{ attachment.filename }}">
+              {{ attachment.filename }}
+          </div>
+          <div class="text-xs text-gray-500 mt-1">
+              {{ attachment.size|filesizeformat }}
+          </div>
         
-        {% if attachment.item %}
-            <a href="{% url 'inventory:item_detail' attachment.item.id %}"
-               class="text-xs text-blue-500 hover:underline block mt-1">
-                View Item
-            </a>
-        {% endif %}
+          <div class="flex gap-2 mt-2">
+              <a href="{{ attachment.file.url }}" 
+               class="text-xs text-blue-500 hover:underline"
+               download>
+                  Download
+              </a>
+              {% if attachment.is_image %}
+                  <button 
+                      class="text-xs text-green-500 hover:underline"
+                      hx-post="{% url 'inventory:refresh_attachment_ai' attachment.id %}"
+                      hx-target="#attachment-ai-{{ attachment.id }}"
+                      hx-indicator="#refresh-spinner-{{ attachment.id }}">
+                      <span class="htmx-indicator" id="refresh-spinner-{{ attachment.id }}">⟳</span>
+                      <span class="htmx-indicator-none">↻ AI</span>
+                  </button>
+              {% endif %}
+          </div>
         
-        {% if attachment.email %}
-            <a href="{% url 'inventory:email_detail' attachment.email.id %}"
-               class="text-xs text-blue-500 hover:underline block mt-1">
-                View Email
-            </a>
-        {% endif %}
-    </div>
-</div>
+          {% if attachment.is_image %}
+              <div id="attachment-ai-{{ attachment.id }}" class="text-xs text-gray-600 mt-2">
+                  {% if attachment.attachment_ai_descriptions.exists %}
+                      {{ attachment.attachment_ai_descriptions.first.response|truncatechars:100 }}
+                  {% else %}
+                      <span class="text-gray-400">No AI description</span>
+                  {% endif %}
+              </div>
+          {% endif %}
+      </div>
+  </div>
 {% endfor %}

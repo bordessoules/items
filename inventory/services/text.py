@@ -15,7 +15,7 @@ class TextService:
         try:
             self.client = Mistral(api_key=os.getenv('MISTRAL_API_KEY'))
             self.model = "ministral-8b-latest"
-            self.default_prompt = """Analyze these image descriptions. 
+            self.default_prompt = """Analyze these images descriptions they should represent the same item but under diferent angles. 
 IMPORTANT:
 - Only include information explicitly mentioned in the descriptions
 - Do not make assumptions about brands or models

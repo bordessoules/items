@@ -52,6 +52,22 @@
                         • Emails: {{ item.emails.count }}
                     {% endif %}
                 </div>
+                <div class="mt-2">
+                    <div class="flex justify-between items-center mb-2">
+                        <div class="text-sm font-semibold">AI Analysis</div>
+                        <button 
+                            class="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+                            hx-post="{% url 'inventory:refresh_ai_analysis' item.id %}"
+                            hx-target="#ai-description-{{ item.id }}"
+                            hx-indicator="#refresh-spinner-{{ item.id }}">
+                            <span class="htmx-indicator" id="refresh-spinner-{{ item.id }}">⟳</span>
+                            <span class="htmx-indicator-none">↻ AI</span>
+                        </button>
+                    </div>
+                    <div id="ai-description-{{ item.id }}" class="text-sm text-gray-600 line-clamp-2">
+                        {% include "inventory/partials/ai_description.html" with description=item.ai_aggregated_description %}
+                    </div>
+                </div>
             </div>
         </div>
     {% empty %}
