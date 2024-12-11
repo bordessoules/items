@@ -366,7 +366,7 @@ def search_items(request):
     
     items = (Item.objects
              .prefetch_related(
-                 'attachments__AIdescription',  # Follows Item -> Attachment -> AIdescription
+                 'attachments__attachment_ai_descriptions',  # Follows Item -> Attachment -> AIdescription
                  'labels',                      # Gets all labels for each item
                  'qr_codes',                    # Gets all QR codes for each item
                  'emails'                       # Gets all emails for each item
