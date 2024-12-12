@@ -1,7 +1,7 @@
+#to be used for local llm like lm studio, tested on windows with qwen2 7b
 from django.core.management.base import BaseCommand
 from inventory.models import Item, AIdescription
 import requests
-import json
 from typing import Optional, Dict, Any
 
 DEFAULT_PROMPT = """You are analyzing a collection of AI-generated descriptions of images related to a single inventory item. 
