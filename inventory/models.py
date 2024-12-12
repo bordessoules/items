@@ -48,8 +48,7 @@ class QRCode(models.Model):
 class AIdescription(models.Model):
     """AI-generated description for an item."""
     item = models.ForeignKey(Item, related_name='item_ai_descriptions', on_delete=models.CASCADE)
-    response = models.CharField(
-        max_length=4096,
+    response = models.TextField(
         null=True,  # Allow null initially
         blank=True,  # Allow blank in forms
         default=""   # Provide empty string default
@@ -165,11 +164,29 @@ class Attachment(models.Model):
             models.Index(fields=['created_at']),
             models.Index(fields=['source']),
         ]
+class AIImgdescription(models.Model):
+    """AI-generated description for an item."""
+    attachment = models.ForeignKey(Attachment, related_name='attachment_ai_descriptions', on_delete=models.CASCADE)
+    response = models.TextField(
+        null=True,  # Allow null initially
+        blank=True,  # Allow blank in forms
+        default=""   # Provide empty string default
+    )
+    payload = models.CharField(
+        max_length=4096,
+        null=True,  # Allow null initially
+        blank=True,  # Allow blank in forms
+        default=""   # Provide empty string default
+    )
 
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Response : {self.response} payload :{self.payload} "
     def query_vision_ai(self, model_name, prompt):
         response_tuple = handle_vision_query(self, model_name, prompt)
         response, _ = response_tuple
-        self.AIdescription.create(response=response, payload={"model":model_name, "promt":prompt})
+        self.AIImgdescription.create(response=response, payload={"model":model_name, "promt":prompt})
         return response
 
     def __str__(self):
@@ -194,26 +211,4 @@ class Attachment(models.Model):
 
     @property
     def has_valid_file(self):
-        return bool(self.file and self.file.name)
-    
-class AIImgdescription(models.Model):
-    """AI-generated description for an item."""
-    attachment = models.ForeignKey(Attachment, related_name='attachment_ai_descriptions', on_delete=models.CASCADE)
-    response = models.CharField(
-        max_length=4096,
-        null=True,  # Allow null initially
-        blank=True,  # Allow blank in forms
-        default=""   # Provide empty string default
-    )
-    payload = models.CharField(
-        max_length=4096,
-        null=True,  # Allow null initially
-        blank=True,  # Allow blank in forms
-        default=""   # Provide empty string default
-    )
-
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Response : {self.response} payload :{self.payload} "
-    
+        return bool(self.file and self.file.name)   

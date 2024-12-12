@@ -31,4 +31,5 @@ urlpatterns = [
     path('items/<int:item_id>/label-section/', views.get_label_section, name='get_label_section'),
     path('items/<int:item_id>/refresh-analysis/', views.refresh_ai_analysis, name='refresh_ai_analysis'),
     path('attachments/<int:attachment_id>/refresh-ai/', views.refresh_attachment_ai, name='refresh_attachment_ai'),
+    path('attachments/<int:attachment_id>/generate-description/', views.generate_image_description, name='generate_image_description'),
 ]

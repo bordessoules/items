@@ -148,64 +148,64 @@ Un système sophistiqué de gestion d'inventaire basé sur Django, utilisant l'I
 
 ### Fonctionnalités Principales
 
-#### Gestion d'Inventaire
-  -**Intégration QR Code**
-    -Extraction automatique des codes QR des emails (format 5 chiffres)
-    -Support multiple de codes QR par article avec validation d'unicité
-    -Gestion des codes QR via points d'accès API
+  #### Gestion d'Inventaire
+    -**Intégration QR Code**
+      -Extraction automatique des codes QR des emails (format 5 chiffres)
+      -Support multiple de codes QR par article avec validation d'unicité
+      -Gestion des codes QR via points d'accès API
 
-#### Analyse par IA
-  -**Analyse d'Images (LLaVA)**
-    -Détection d'objets et génération de descriptions
-    -Extraction de texte et codes-barres des images
-    -Configurable via la commande generate_llava_descriptions
+  #### Analyse par IA
+    -**Analyse d'Images (LLaVA)**
+      -Détection d'objets et génération de descriptions
+      -Extraction de texte et codes-barres des images
+      -Configurable via la commande generate_llava_descriptions
 
-  -**Traitement de Texte (Qwen)**
-    -Synthèse de descriptions agrégées
-    -Extraction de spécifications techniques
-    -Vérification de cohérence entre descriptions
+    -**Traitement de Texte (Qwen)**
+      -Synthèse de descriptions agrégées
+      -Extraction de spécifications techniques
+      -Vérification de cohérence entre descriptions
 
-  -**Traitement des Emails**
-    -Système en Deux Passes
-    -Première passe : Nouveaux articles (sujets à 5 chiffres)
-    -Seconde passe : Mises à jour (format re:)
-    -Gestion des pièces jointes avec extraction de métadonnées
-    -Support du threading des emails
+    -**Traitement des Emails**
+      -Système en Deux Passes
+      -Première passe : Nouveaux articles (sujets à 5 chiffres)
+      -Seconde passe : Mises à jour (format re:)
+      -Gestion des pièces jointes avec extraction de métadonnées
+      -Support du threading des emails
 
-  -**Interface Moderne**
-    -Intégration HTMX
-    -Recherche en temps réel
-    -Vues modales dynamiques
-    -Gestion instantanée des étiquettes
-    -Mises à jour dynamiques du contenu
-  
-  -**Stack Technique**
-    -Django 5.1
-    -Django REST Framework
-    -HTMX pour l'interactivité frontend
-    -DRF Spectacular pour la documentation API
-    -Django Filters pour les capacités de recherche
-  
-### Points d'Accès API
-
-  -**Articles**
-      Liste/Création : /api/items/
-      Détail/Mise à jour/Suppression : /api/items/{id}/
-      Ajout Code QR : /api/items/{id}/add_qr_code/
-      Ajout Étiquette : /api/items/{id}/add_label/
+    -**Interface Moderne**
+      -Intégration HTMX
+      -Recherche en temps réel
+      -Vues modales dynamiques
+      -Gestion instantanée des étiquettes
+      -Mises à jour dynamiques du contenu
     
-  -**Emails**
-      Liste/Création : /api/emails/
-      Détail/Mise à jour/Suppression : /api/emails/{id}/
-      Traitement Non-gérés : /api/emails/process_unhandled/
+    -**Stack Technique**
+      -Django 5.1
+      -Django REST Framework
+      -HTMX pour l'interactivité frontend
+      -DRF Spectacular pour la documentation API
+      -Django Filters pour les capacités de recherche
     
-  -**Codes QR & Étiquettes**
-      Codes QR : /api/qrcodes/
-      Étiquettes : /api/labels/
-    
-  -**Pièces Jointes**
-      Liste/Téléchargement : /api/attachments/
-      Détail/Mise à jour/Suppression : /api/attachments/{id}/
+    #### Points d'Accès API
+
+    -**Articles**
+        Liste/Création : /api/items/
+        Détail/Mise à jour/Suppression : /api/items/{id}/
+        Ajout Code QR : /api/items/{id}/add_qr_code/
+        Ajout Étiquette : /api/items/{id}/add_label/
+      
+    -**Emails**
+        Liste/Création : /api/emails/
+        Détail/Mise à jour/Suppression : /api/emails/{id}/
+        Traitement Non-gérés : /api/emails/process_unhandled/
+      
+    -**Codes QR & Étiquettes**
+        Codes QR : /api/qrcodes/
+        Étiquettes : /api/labels/
+      
+    -**Pièces Jointes**
+        Liste/Téléchargement : /api/attachments/
+        Détail/Mise à jour/Suppression : /api/attachments/{id}/
     
 ### Installation
     1.Configuration de l'Environnement :
@@ -252,14 +252,14 @@ Un système sophistiqué de gestion d'inventaire basé sur Django, utilisant l'I
 
   #### Traitement des Emails
     -**Récupération des emails**
-        ```bash
-        python manage.py fetch_emails
-        ```
+      ```bash
+      python manage.py fetch_emails
+      ```
     
     -**Traitement des articles**
-        ```bash
-        python manage.py process_items --verbose
-      ```
+      ```bash
+      python manage.py process_items --verbose
+    ```
   
   #### Analyse IA
   
@@ -275,15 +275,15 @@ Un système sophistiqué de gestion d'inventaire basé sur Django, utilisant l'I
 
 ### Modèle de Données
 
-```mermaid
-graph TD
-    Item --- QRCode
-    Item --- Attachment["Pièce Jointe"]
-    Item --- Email
-    Item --- Label["Étiquette"]
-    Email --- Attachment
-    Attachment --- AIImgdescription["Description IA Image"]
-    Item --- AIdescription["Description IA"]
-    Label --- Item
-    Email --- Item
-```
+  ```mermaid
+  graph TD
+      Item --- QRCode
+      Item --- Attachment["Pièce Jointe"]
+      Item --- Email
+      Item --- Label["Étiquette"]
+      Email --- Attachment
+      Attachment --- AIImgdescription["Description IA Image"]
+      Item --- AIdescription["Description IA"]
+      Label --- Item
+      Email --- Item
+  ```

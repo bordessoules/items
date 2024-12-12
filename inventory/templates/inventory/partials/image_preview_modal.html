@@ -35,31 +35,54 @@
                      alt="{{ attachment.filename }}"
                      class="max-h-[75vh] mx-auto">
             </div>
-
-            <div class="mt-4 text-center">
-                <div class="font-medium">{{ attachment.filename }}</div>
-                <div class="text-sm text-gray-500">
-                    {{ attachment.size|filesizeformat }} - {{ attachment.content_type }}
-                </div>
-                <div class="text-sm text-gray-500 mt-1">
-                    Image {{ current_index }} of {{ total_images }}
-                </div>
-                <div class="mt-2 flex justify-center gap-4">
-                    {% if attachment.item %}
-                        <a href="{% url 'inventory:item_detail' attachment.item.id %}"
+              <div class="mt-4 text-center">
+                  <div class="text-left p-4 bg-gray-50 rounded-lg my-3" id="ai-description-container">
+                      {% if attachment.attachment_ai_descriptions.first %}
+                          <div class="flex justify-between items-start mb-2">
+                              <h3 class="font-medium">AI Image Analysis:</h3>
+                              <button class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-sm"
+                                      hx-post="{% url 'inventory:refresh_attachment_ai' attachment.id %}"
+                                      hx-swap="outerHTML"
+                                      hx-target="#ai-description-container">
+                                  ↻ Regenerate
+                              </button>
+                          </div>
+                          <p class="text-gray-700">{{ attachment.attachment_ai_descriptions.first.response }}</p>
+                      {% else %}
+                          <div class="flex justify-center">
+                              <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+                                      hx-post="{% url 'inventory:refresh_attachment_ai' attachment.id %}"
+                                      hx-swap="outerHTML"
+                                      hx-target="#ai-description-container">
+                                  Generate AI Description
+                              </button>
+                          </div>
+                      {% endif %}
+                  </div>
+              </div>
+                  <div class="font-medium">{{ attachment.filename }}</div>
+                  <div class="text-sm text-gray-500">
+                      {{ attachment.size|filesizeformat }} - {{ attachment.content_type }}
+                  </div>
+                  <div class="text-sm text-gray-500 mt-1">
+                      Image {{ current_index }} of {{ total_images }}
+                  </div>
+                  <div class="mt-2 flex justify-center gap-4">
+                      {% if attachment.item %}
+                          <a href="{% url 'inventory:item_detail' attachment.item.id %}"
                            class="text-blue-500 hover:underline"
                            hx-get="{% url 'inventory:item_detail' attachment.item.id %}"
                            hx-target="#modal-container">
-                            View Item
-                        </a>
-                    {% endif %}
-                    <a href="{{ attachment.file.url }}"
+                              View Item
+                          </a>
+                      {% endif %}
+                      <a href="{{ attachment.file.url }}"
                        class="text-blue-500 hover:underline"
                        download>
-                        Download
-                    </a>
-                </div>
-            </div>
-        </div>
+                          Download
+                      </a>
+                  </div>
+              </div>
+          </div>
     </div>
 </div>

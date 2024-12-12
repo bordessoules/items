@@ -13,6 +13,7 @@ from django.db import transaction
 from django.db.models import Q
 from django.core.management import call_command
 from django.http import JsonResponse
+from logging import warning
 
 from .models import Item, Email, Attachment, Label, QRCode
 
@@ -90,7 +91,7 @@ class ItemListView(BaseListView):
             'labels',
             'qr_codes',
             'emails'
-        )
+        ).order_by('-created_at')  # Add default ordering by creation date, newest first
         
         search_query = self.request.GET.get('q')
         
@@ -356,6 +357,7 @@ def delete_label(request, label_id):
         return HttpResponse("", status=200)
     except Exception as e:
         return HttpResponse(str(e), status=400)
+    
 @require_http_methods(["GET"])
 def get_label_section(request, item_id):
     """Get updated label section for an item."""
@@ -483,4 +485,19 @@ def refresh_attachment_ai(request, attachment_id):
             'attachment': attachment
         })
     except Exception as e:
+        warning('error:' + str(e))
         return JsonResponse({'error': str(e)}, status=500)
+
+@require_http_methods(["POST"])
+def generate_image_description(request, attachment_id):
+    attachment = get_object_or_404(Attachment, id=attachment_id)
+    try:
+        response = attachment.query_vision_ai("pixtral-12b-2409", "Décris uniquement l'objet principal de cette image de manière factuelle (dimensions, couleurs, forme, matériau). Liste ensuite tous les textes et codes-barres visibles mot pour mot, sans interprétation. Ignore l'arrière-plan et toute personne présente dans l'image.")
+        
+        return render(request, 'inventory/partials/attachment_ai_description.html', {
+            'description': response,
+            'attachment': attachment
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
