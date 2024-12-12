@@ -145,18 +145,17 @@ Un système sophistiqué de gestion d'inventaire basé sur Django, utilisant l'I
 
 ### Gestion d'Inventaire
   -**Intégration QR Code**
-  -Extraction automatique des codes QR des emails (format 5 chiffres)
-  -Support multiple de codes QR par article avec validation d'unicité
-  -Gestion des codes QR via points d'accès API
+    -Extraction automatique des codes QR des emails (format 5 chiffres)
+    -Support multiple de codes QR par article avec validation d'unicité
+    -Gestion des codes QR via points d'accès API
+
 ### Analyse par IA
   -**Analyse d'Images (LLaVA)**
-
-  -Détection d'objets et génération de descriptions
-  -Extraction de texte et codes-barres des images
-  -Configurable via la commande generate_llava_descriptions
+    -Détection d'objets et génération de descriptions
+    -Extraction de texte et codes-barres des images
+    -Configurable via la commande generate_llava_descriptions
 
   -**Traitement de Texte (Qwen)**
-
     -Synthèse de descriptions agrégées
     -Extraction de spécifications techniques
     -Vérification de cohérence entre descriptions
@@ -183,6 +182,7 @@ Un système sophistiqué de gestion d'inventaire basé sur Django, utilisant l'I
     -Django Filters pour les capacités de recherche
   
 ### Points d'Accès API
+
   -**Articles**
       Liste/Création : /api/items/
       Détail/Mise à jour/Suppression : /api/items/{id}/
@@ -204,17 +204,20 @@ Un système sophistiqué de gestion d'inventaire basé sur Django, utilisant l'I
     
 ### Installation
   1.Configuration de l'Environnement :
+
     ```bash
     python -m venv venv
     source venv/bin/activate  # Unix
     .\venv\Scripts\activate   # Windows
     ```  
   2.Dépendances :
+
     ```bash
     pip install -r requirements.txt
     ```
 
 ### Configuration Environnement (.env) :
+
   ```bash
   DJANGO_SECRET_KEY=votre-clé-secrète
   DEBUG=True
@@ -231,16 +234,17 @@ Un système sophistiqué de gestion d'inventaire basé sur Django, utilisant l'I
 
 ### Configuration Services IA :
   # Serveur LLaVA
-  ```bash
-  LLAVA_SERVER_URL=http://localhost:1234
-  ```
+    ```bash
+    LLAVA_SERVER_URL=http://localhost:1234
+    ```
 
 # Serveur Qwen
-  ```bash
-  QWEN_SERVER_URL=http://host.docker.internal:1234
-  ```
+    ```bash
+    QWEN_SERVER_URL=http://host.docker.internal:1234
+    ```
 
 ### Commandes de Gestion
+
 Traitement des Emails
 # Récupération des emails
   ```bash
@@ -253,12 +257,13 @@ Traitement des Emails
   ```
 
 ### Analyse IA
-  # Génération des descriptions d'images
+
+  -**Génération des descriptions d'images**
     ```bash 
     python manage.py generate_llava_descriptions 
     ```
 
-  # Traitement analyse textuelle
+  -**Traitement analyse textuelle**
     ```bash 
     python manage.py process_qwen_analysis
     ```
