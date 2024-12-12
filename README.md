@@ -40,7 +40,7 @@ A sophisticated Django-based inventory management system that leverages AI for i
   - Instant label management
   - Live content updates
 
-### Technical Stack
+#### Technical Stack
 - Django 5.1
 - Django REST Framework
 - HTMX for frontend interactivity
@@ -70,7 +70,7 @@ A sophisticated Django-based inventory management system that leverages AI for i
 
 ### Installation
 
-# Environment Setup
+#### Environment Setup
 ```bash
   python -m venv venv
   source venv/bin/activate  # Unix
@@ -79,7 +79,7 @@ A sophisticated Django-based inventory management system that leverages AI for i
   pip install -r requirements.txt
   ```
 
-# Environment Configuration (.env):
+#### Environment Configuration (.env):
 ```bash
   DJANGO_SECRET_KEY=your-secret-key-here
   DEBUG=True
@@ -94,39 +94,46 @@ A sophisticated Django-based inventory management system that leverages AI for i
   MAX_UPLOAD_SIZE=5242880
 ```
 
-### AI Services Configuration:
-  # LLaVA Server
-  ```bash
-  LLAVA_SERVER_URL=http://192.168.1.112:1234
-  ```
+#### AI Services Configuration:
+  -**LLaVA Server**
+    ```bash
+    LLAVA_SERVER_URL=http://192.168.1.112:1234
+    ```
 
-  # Qwen Server
-  ```bash
-  QWEN_SERVER_URL=http://host.docker.internal:1234
-  ```
+  -**Qwen Server**
+    ```bash
+    QWEN_SERVER_URL=http://host.docker.internal:1234
+    ```
 
-### Management Commands
-  Email Processing
-  # Fetch emails
-  ```bash
-  python manage.py fetch_emails
-  ```
+#### Management Commands
+  -**Email Processing**
+    -Fetch emails
+    ```bash
+    python manage.py fetch_emails
+    ```
 
-  # Process items
-  ```bash
-  python manage.py process_items --verbose
-  ```
+    -Process items
+    ```bash
+    python manage.py process_items --verbose
+    ```
 
-### AI Analysis
-  # Generate image descriptions
-  ```bash
-  python manage.py generate_llava_descriptions
-  ```
-  # Process text analysis
-  ```bash
-  python manage.py process_qwen_analysis
-  ```
+#### AI Analysis
+  -**Generate image descriptions**
+    ```bash
+    python manage.py generate_llava_descriptions
+    ```
+  
+  -**Process text analysis**
+    ```bash
+    python manage.py process_qwen_analysis
+    ```
 
+### Data Model
+
+```mermaid
+---
+title: Inventory System Data Model
+---
 Data Model
 erDiagram
     Item ||--o{ QRCode : has
@@ -136,7 +143,7 @@ erDiagram
     Email ||--o{ Attachment : has
     Attachment ||--o{ AIImgdescription : describes
     Item ||--o{ AIdescription : analyzes
-
+```
 
 ## Français
 Un système sophistiqué de gestion d'inventaire basé sur Django, utilisant l'IA pour l'analyse d'images, le traitement d'emails avec codes QR, et offrant une interface moderne avec HTMX.
@@ -256,7 +263,7 @@ Traitement des Emails
   python manage.py process_items --verbose
   ```
 
-### Analyse IA
+#### Analyse IA
 
   -**Génération des descriptions d'images**
     ```bash 
@@ -269,6 +276,11 @@ Traitement des Emails
     ```
 
 ### Modèle de Données
+
+```mermaid
+---
+title: Modèle de Données du projet Item
+---
 erDiagram
     Item ||--o{ QRCode : possède
     Item ||--o{ Attachment : possède
@@ -277,3 +289,4 @@ erDiagram
     Email ||--o{ Attachment : possède
     Attachment ||--o{ AIImgdescription : décrit
     Item ||--o{ AIdescription : analyse
+```
