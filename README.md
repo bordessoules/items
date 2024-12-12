@@ -182,38 +182,37 @@ Un système sophistiqué de gestion d'inventaire basé sur Django, utilisant l'I
     -DRF Spectacular pour la documentation API
     -Django Filters pour les capacités de recherche
   
-  ### Points d'Accès API
-
-    -**Articles**
+### Points d'Accès API
+  -**Articles**
       Liste/Création : /api/items/
       Détail/Mise à jour/Suppression : /api/items/{id}/
       Ajout Code QR : /api/items/{id}/add_qr_code/
       Ajout Étiquette : /api/items/{id}/add_label/
     
-    -**Emails**
+  -**Emails**
       Liste/Création : /api/emails/
       Détail/Mise à jour/Suppression : /api/emails/{id}/
       Traitement Non-gérés : /api/emails/process_unhandled/
     
-    -**Codes QR & Étiquettes
+  -**Codes QR & Étiquettes**
       Codes QR : /api/qrcodes/
       Étiquettes : /api/labels/
     
-    -**Pièces Jointes**
+  -**Pièces Jointes**
       Liste/Téléchargement : /api/attachments/
       Détail/Mise à jour/Suppression : /api/attachments/{id}/
     
-  ###Installation
-    1.Configuration de l'Environnement :
+### Installation
+  1.Configuration de l'Environnement :
     ```bash
     python -m venv venv
     source venv/bin/activate  # Unix
     .\venv\Scripts\activate   # Windows
-  ```  
+    ```  
   2.Dépendances :
     ```bash
-      pip install -r requirements.txt
-      ```
+    pip install -r requirements.txt
+    ```
 
 ### Configuration Environnement (.env) :
   ```bash
@@ -231,15 +230,15 @@ Un système sophistiqué de gestion d'inventaire basé sur Django, utilisant l'I
   ```
 
 ### Configuration Services IA :
-# Serveur LLaVA
-```bash
-LLAVA_SERVER_URL=http://localhost:1234
-```
+  # Serveur LLaVA
+  ```bash
+  LLAVA_SERVER_URL=http://localhost:1234
+  ```
 
 # Serveur Qwen
-```bash
-QWEN_SERVER_URL=http://host.docker.internal:1234
-```
+  ```bash
+  QWEN_SERVER_URL=http://host.docker.internal:1234
+  ```
 
 ### Commandes de Gestion
 Traitement des Emails
@@ -255,11 +254,14 @@ Traitement des Emails
 
 ### Analyse IA
   # Génération des descriptions d'images
-
-    ```bash python manage.py generate_llava_descriptions ```
+    ```bash 
+    python manage.py generate_llava_descriptions 
+    ```
 
   # Traitement analyse textuelle
-    ```bash python manage.py process_qwen_analysis```
+    ```bash 
+    python manage.py process_qwen_analysis
+    ```
 
 ### Modèle de Données
 erDiagram
