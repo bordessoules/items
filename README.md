@@ -131,18 +131,16 @@ A sophisticated Django-based inventory management system that leverages AI for i
 ### Data Model
 
 ```mermaid
----
-title: Inventory System Data Model
----
-Data Model
-erDiagram
-    Item ||--o{ QRCode : has
-    Item ||--o{ Attachment : has
-    Item ||--o{ Email : has
-    Item }o--o{ Label : has
-    Email ||--o{ Attachment : has
-    Attachment ||--o{ AIImgdescription : describes
-    Item ||--o{ AIdescription : analyzes
+graph TD
+    Item --- QRCode
+    Item --- Attachment
+    Item --- Email
+    Item --- Label
+    Email --- Attachment
+    Attachment --- AIImgdescription
+    Item --- AIdescription
+    Label --- Item
+    Email --- Item
 ```
 
 ## Français
@@ -278,15 +276,14 @@ Traitement des Emails
 ### Modèle de Données
 
 ```mermaid
----
-title: Modèle de Données du projet Item
----
-erDiagram
-    Item ||--o{ QRCode : possède
-    Item ||--o{ Attachment : possède
-    Item ||--o{ Email : possède
-    Item }o--o{ Label : possède
-    Email ||--o{ Attachment : possède
-    Attachment ||--o{ AIImgdescription : décrit
-    Item ||--o{ AIdescription : analyse
+graph TD
+    Item --- QRCode
+    Item --- Attachment["Pièce Jointe"]
+    Item --- Email
+    Item --- Label["Étiquette"]
+    Email --- Attachment
+    Attachment --- AIImgdescription["Description IA Image"]
+    Item --- AIdescription["Description IA"]
+    Label --- Item
+    Email --- Item
 ```
