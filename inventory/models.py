@@ -2,6 +2,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from inventory.services.vision import handle_vision_query
 import os
+import logging
 
 class Item(models.Model):
     """Core inventory item model."""
@@ -164,6 +165,17 @@ class Attachment(models.Model):
             models.Index(fields=['created_at']),
             models.Index(fields=['source']),
         ]
+    @property
+    def is_image(self):
+        return self.content_type.startswith('image/') if self.content_type else False
+    def __str__(self):
+        return f"Response : {self.response} payload :{self.payload} "
+    def query_vision_ai(self, model_name, prompt):
+        response_tuple = handle_vision_query(self, model_name, prompt)
+        response, _ = response_tuple
+        self.AIImgdescription.create(response=response, payload={"model":model_name, "promt":prompt})
+        return response
+    
 class AIImgdescription(models.Model):
     """AI-generated description for an item."""
     attachment = models.ForeignKey(Attachment, related_name='attachment_ai_descriptions', on_delete=models.CASCADE)
@@ -178,16 +190,7 @@ class AIImgdescription(models.Model):
         blank=True,  # Allow blank in forms
         default=""   # Provide empty string default
     )
-
     created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Response : {self.response} payload :{self.payload} "
-    def query_vision_ai(self, model_name, prompt):
-        response_tuple = handle_vision_query(self, model_name, prompt)
-        response, _ = response_tuple
-        self.AIImgdescription.create(response=response, payload={"model":model_name, "promt":prompt})
-        return response
 
     def __str__(self):
         return f"{self.filename} ({self.get_source_display()})"
@@ -202,13 +205,9 @@ class AIImgdescription(models.Model):
         super().save(*args, **kwargs)
 
     @property
-    def is_image(self):
-        return self.content_type.startswith('image/') if self.content_type else False
-
-    @property
     def is_pdf(self):
         return self.content_type == 'application/pdf'
 
     @property
     def has_valid_file(self):
-        return bool(self.file and self.file.name)   
+        return bool(self.file and self.file.name)  
