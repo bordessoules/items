@@ -41,32 +41,32 @@ A sophisticated Django-based inventory management system that leverages AI for i
     - Live content updates
   
   #### Technical Stack
-    - Django 5.1
-    - Django REST Framework
-    - HTMX for frontend interactivity
-    - DRF Spectacular for API documentation
-    - Django Filters for search capabilities
+  - Django 5.1
+  - Django REST Framework
+  - HTMX for frontend interactivity
+  - DRF Spectacular for API documentation
+  - Django Filters for search capabilities
 
 ### API Endpoints
   
   #### Items
-    - List/Create: `/api/items/`
-    - Detail/Update/Delete: `/api/items/{id}/`
-    - Add QR Code: `/api/items/{id}/add_qr_code/`
-    - Add Label: `/api/items/{id}/add_label/`
+  - List/Create: `/api/items/`
+  - Detail/Update/Delete: `/api/items/{id}/`
+  - Add QR Code: `/api/items/{id}/add_qr_code/`
+  - Add Label: `/api/items/{id}/add_label/`
   
   #### Emails
-    - List/Create: `/api/emails/`
-    - Detail/Update/Delete: `/api/emails/{id}/`
-    - Process Unhandled: `/api/emails/process_unhandled/`
+  - List/Create: `/api/emails/`
+  - Detail/Update/Delete: `/api/emails/{id}/`
+  - Process Unhandled: `/api/emails/process_unhandled/`
   
   #### QR Codes & Labels
-    - QR Codes: `/api/qrcodes/`
-    - Labels: `/api/labels/`
+  - QR Codes: `/api/qrcodes/`
+  - Labels: `/api/labels/`
   
   #### Attachments
-    - List/Upload: `/api/attachments/`
-    - Detail/Update/Delete: `/api/attachments/{id}/`
+  - List/Upload: `/api/attachments/`
+  - Detail/Update/Delete: `/api/attachments/{id}/`
 
 ### Installation
 
@@ -149,64 +149,64 @@ Un système sophistiqué de gestion d'inventaire basé sur Django, utilisant l'I
 ### Fonctionnalités Principales
 
   #### Gestion d'Inventaire
-    -**Intégration QR Code**
-      -Extraction automatique des codes QR des emails (format 5 chiffres)
-      -Support multiple de codes QR par article avec validation d'unicité
-      -Gestion des codes QR via points d'accès API
+  - **Intégration QR Code**
+    -Extraction automatique des codes QR des emails (format 5 chiffres)
+    -Support multiple de codes QR par article avec validation d'unicité
+    -Gestion des codes QR via points d'accès API
 
   #### Analyse par IA
-    -**Analyse d'Images (LLaVA)**
-      -Détection d'objets et génération de descriptions
-      -Extraction de texte et codes-barres des images
-      -Configurable via la commande generate_llava_descriptions
+  - **Analyse d'Images (LLaVA)**
+    -Détection d'objets et génération de descriptions
+    -Extraction de texte et codes-barres des images
+    -Configurable via la commande generate_llava_descriptions
 
-    -**Traitement de Texte (Qwen)**
-      -Synthèse de descriptions agrégées
-      -Extraction de spécifications techniques
-      -Vérification de cohérence entre descriptions
+  - **Traitement de Texte (Qwen)**
+    -Synthèse de descriptions agrégées
+    -Extraction de spécifications techniques
+    -Vérification de cohérence entre descriptions
 
-    -**Traitement des Emails**
-      -Système en Deux Passes
-      -Première passe : Nouveaux articles (sujets à 5 chiffres)
-      -Seconde passe : Mises à jour (format re:)
-      -Gestion des pièces jointes avec extraction de métadonnées
-      -Support du threading des emails
+  - **Traitement des Emails**
+    -Système en Deux Passes
+    -Première passe : Nouveaux articles (sujets à 5 chiffres)
+    -Seconde passe : Mises à jour (format re:)
+    -Gestion des pièces jointes avec extraction de métadonnées
+    -Support du threading des emails
 
-    -**Interface Moderne**
-      -Intégration HTMX
-      -Recherche en temps réel
-      -Vues modales dynamiques
-      -Gestion instantanée des étiquettes
-      -Mises à jour dynamiques du contenu
+  - **Interface Moderne**
+    -Intégration HTMX
+    -Recherche en temps réel
+    -Vues modales dynamiques
+    -Gestion instantanée des étiquettes
+    -Mises à jour dynamiques du contenu
     
-    -**Stack Technique**
-      -Django 5.1
-      -Django REST Framework
-      -HTMX pour l'interactivité frontend
-      -DRF Spectacular pour la documentation API
-      -Django Filters pour les capacités de recherche
-    
-    #### Points d'Accès API
+  - **Stack Technique**
+    -Django 5.1
+    -Django REST Framework
+    -HTMX pour l'interactivité frontend
+    -DRF Spectacular pour la documentation API
+    -Django Filters pour les capacités de recherche
+  
+  #### Points d'Accès API
 
-    -**Articles**
-        Liste/Création : /api/items/
-        Détail/Mise à jour/Suppression : /api/items/{id}/
-        Ajout Code QR : /api/items/{id}/add_qr_code/
-        Ajout Étiquette : /api/items/{id}/add_label/
-      
-    -**Emails**
-        Liste/Création : /api/emails/
-        Détail/Mise à jour/Suppression : /api/emails/{id}/
-        Traitement Non-gérés : /api/emails/process_unhandled/
-      
-    -**Codes QR & Étiquettes**
-        Codes QR : /api/qrcodes/
-        Étiquettes : /api/labels/
-      
-    -**Pièces Jointes**
-        Liste/Téléchargement : /api/attachments/
-        Détail/Mise à jour/Suppression : /api/attachments/{id}/
+  - **Articles**
+      Liste/Création : /api/items/
+      Détail/Mise à jour/Suppression : /api/items/{id}/
+      Ajout Code QR : /api/items/{id}/add_qr_code/
+      Ajout Étiquette : /api/items/{id}/add_label/
     
+  - **Emails**
+      Liste/Création : /api/emails/
+      Détail/Mise à jour/Suppression : /api/emails/{id}/
+      Traitement Non-gérés : /api/emails/process_unhandled/
+    
+  - **Codes QR & Étiquettes**
+      Codes QR : /api/qrcodes/
+      Étiquettes : /api/labels/
+    
+  - **Pièces Jointes**
+      Liste/Téléchargement : /api/attachments/
+      Détail/Mise à jour/Suppression : /api/attachments/{id}/
+  
 ### Installation
     1.Configuration de l'Environnement :
   
@@ -238,40 +238,40 @@ Un système sophistiqué de gestion d'inventaire basé sur Django, utilisant l'I
     ```
   
   #### Configuration Services IA :
-    -**Serveur LLaVA**
-        ```bash
-        LLAVA_SERVER_URL=http://localhost:1234
-        ```
-  
-    -**Serveur Qwen**
-        ```bash
-        QWEN_SERVER_URL=http://host.docker.internal:1234
+  - **Serveur LLaVA**
+      ```bash
+      LLAVA_SERVER_URL=http://localhost:1234
+      ```
+
+  - **Serveur Qwen**
+      ```bash
+      QWEN_SERVER_URL=http://host.docker.internal:1234
         ```
 
 ### Commandes de Gestion
 
   #### Traitement des Emails
-    -**Récupération des emails**
-      ```bash
-      python manage.py fetch_emails
-      ```
-    
-    -**Traitement des articles**
-      ```bash
-      python manage.py process_items --verbose
+  - **Récupération des emails**
+    ```bash
+    python manage.py fetch_emails
     ```
   
+  - **Traitement des articles**
+    ```bash
+    python manage.py process_items --verbose
+    ```
+
   #### Analyse IA
-  
-    -**Génération des descriptions d'images**
-      ```bash 
-      python manage.py generate_llava_descriptions 
-      ```
-  
-    -**Traitement analyse textuelle**
-      ```bash 
-      python manage.py process_qwen_analysis
-      ```
+
+  - **Génération des descriptions d'images**
+    ```bash 
+    python manage.py generate_llava_descriptions 
+    ```
+
+  - **Traitement analyse textuelle**
+    ```bash 
+    python manage.py process_qwen_analysis
+    ```
 
 ### Modèle de Données
 
