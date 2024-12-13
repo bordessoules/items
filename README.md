@@ -27,18 +27,18 @@ A sophisticated Django-based inventory management system that leverages AI for i
     - Consistency verification across descriptions
   
   #### Email Processing
-    - **Two-Pass System**
-      - First pass: New items (5-digit subjects)
-      - Second pass: Updates (re: format)
-      - Attachment handling with metadata extraction
-      - Email threading support
+  - **Two-Pass System**
+    - First pass: New items (5-digit subjects)
+    - Second pass: Updates (re: format)
+    - Attachment handling with metadata extraction
+    - Email threading support
   
   #### Modern Interface
-    - **HTMX Integration**
-      - Real-time search functionality
-      - Dynamic modal views
-      - Instant label management
-      - Live content updates
+  - **HTMX Integration**
+    - Real-time search functionality
+    - Dynamic modal views
+    - Instant label management
+    - Live content updates
   
   #### Technical Stack
     - Django 5.1
