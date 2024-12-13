@@ -71,13 +71,13 @@ A sophisticated Django-based inventory management system that leverages AI for i
 ### Installation
 
   #### Environment Setup
-    ```bash
-    python -m venv venv
-    source venv/bin/activate  # Unix
-    .\venv\Scripts\activate   # Windows
-  
-    pip install -r requirements.txt
-    ```
+  ```bash
+  python -m venv venv
+  source venv/bin/activate  # Unix
+  .\venv\Scripts\activate   # Windows
+
+  pip install -r requirements.txt
+  ```
   
   #### Environment Configuration (.env):
   ```bash
@@ -208,18 +208,18 @@ Un système sophistiqué de gestion d'inventaire basé sur Django, utilisant l'I
       Détail/Mise à jour/Suppression : /api/attachments/{id}/
   
 ### Installation
-    1.Configuration de l'Environnement :
-  
-      ```bash
-      python -m venv venv
-      source venv/bin/activate  # Unix
-      .\venv\Scripts\activate   # Windows
-      ```  
-    2.Dépendances :
-  
-      ```bash
-      pip install -r requirements.txt
-      ```
+1. Configuration de l'Environnement :
+
+  ```bash
+  python -m venv venv
+  source venv/bin/activate  # Unix
+  .\venv\Scripts\activate   # Windows
+  ```  
+2. Dépendances :
+
+  ```bash
+  pip install -r requirements.txt
+  ```
   
   #### Configuration Environnement (.env) :
   
