@@ -71,7 +71,7 @@ A sophisticated Django-based inventory management system that leverages AI for i
 ### Installation
 
   #### Environment Setup
-  ```bash
+    ```bash
     python -m venv venv
     source venv/bin/activate  # Unix
     .\venv\Scripts\activate   # Windows
@@ -95,38 +95,38 @@ A sophisticated Django-based inventory management system that leverages AI for i
   ```
   
   #### AI Services Configuration:
-    -**LLaVA Server**
-      ```bash
-      LLAVA_SERVER_URL=http://192.168.1.112:1234
-      ```
-  
-    -**Qwen Server**
-      ```bash
-      QWEN_SERVER_URL=http://host.docker.internal:1234
-      ```
+  - **LLaVA Server**
+    ```bash
+    LLAVA_SERVER_URL=http://192.168.1.112:1234
+    ```
+
+  - **Qwen Server**
+    ```bash
+    QWEN_SERVER_URL=http://host.docker.internal:1234
+    ```
   
   #### Management Commands
-    -**Email Processing**
-      -Fetch emails
-      ```bash
-      python manage.py fetch_emails
-      ```
-  
-      -Process items
-      ```bash
-      python manage.py process_items --verbose
-      ```
+  - **Email Processing**
+    - Fetch emails
+    ```bash
+    python manage.py fetch_emails
+    ```
+
+    - Process items
+    ```bash
+    python manage.py process_items --verbose
+    ```
   
   #### AI Analysis
-    -**Generate image descriptions**
-      ```bash
-      python manage.py generate_llava_descriptions
-      ```
-    
-    -**Process text analysis**
-      ```bash
-      python manage.py process_qwen_analysis
-      ```
+  - **Generate image descriptions**
+    ```bash
+    python manage.py generate_llava_descriptions
+    ```
+  
+  - **Process text analysis**
+    ```bash
+    python manage.py process_qwen_analysis
+    ```
 
 ### Data Model
 
