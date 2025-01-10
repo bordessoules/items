@@ -11,6 +11,7 @@ urlpatterns = [
     path('items/', views.ItemListView.as_view(), name='item_list'),
     path('labels/', views.LabelListView.as_view(), name='label_list'),
     path('attachments/', views.AttachmentListView.as_view(), name='attachment_list'),
+    path('items/<int:item_id>/generate-listing/', views.generate_listing, name='generate_listing'),
 
     # Add this new route for email search
     path('emails/search-html/', views.search_emails, name='email-search-html'),

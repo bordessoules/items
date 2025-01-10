@@ -173,8 +173,13 @@ class Attachment(models.Model):
     def query_vision_ai(self, model_name, prompt):
         response_tuple = handle_vision_query(self, model_name, prompt)
         response, _ = response_tuple
-        self.AIImgdescription.create(response=response, payload={"model":model_name, "promt":prompt})
+        self.attachment_ai_descriptions.create(response=response, payload={"model":model_name, "promt":prompt})
+        #self.AIImgdescription.create(response=response, payload={"model":model_name, "promt":prompt})
         return response
+    
+    @property
+    def has_valid_file(self):
+        return bool(self.file and self.file.name)
     
 class AIImgdescription(models.Model):
     """AI-generated description for an item."""
@@ -193,16 +198,18 @@ class AIImgdescription(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.filename} ({self.get_source_display()})"
+        #return f"{self.filename} ({self.get_source_display()})"
+        return f"AI Description for {self.attachment.filename}"
 
-    def save(self, *args, **kwargs):
-        if not self.filename and self.file:
-            self.filename = os.path.basename(self.file.name)
-        if not self.size and self.file:
-            self.size = self.file.size
-        if self.email and not self.source:
-            self.source = 'EMAIL'
-        super().save(*args, **kwargs)
+
+    #def save(self, *args, **kwargs):
+    #    if not self.filename and self.file:
+    #        self.filename = os.path.basename(self.file.name)
+    #    if not self.size and self.file:
+    #        self.size = self.file.size
+    #    if self.email and not self.source:
+    #        self.source = 'EMAIL'
+    #    super().save(*args, **kwargs)
 
     @property
     def is_pdf(self):
@@ -210,4 +217,35 @@ class AIImgdescription(models.Model):
 
     @property
     def has_valid_file(self):
-        return bool(self.file and self.file.name)  
+        return bool(self.file and self.file.name)
+
+class ListingCategory(models.Model):
+    """Categories for LeBonCoin listings"""
+    name = models.CharField(max_length=100)    
+    class Meta:
+        verbose_name_plural = "Listing categories"
+    
+    def __str__(self):
+        return f"{self.parent.name} > {self.name}" if self.parent else self.name
+
+class ListingLBC(models.Model):
+    """Listing on the LeBonCoin website."""
+    CATEGORY_CHOICES = [
+        ('ordinateurs', 'Ordinateurs'),
+        ('accessoires_informatique', 'Accessoires informatique'),
+        ('tablettes_liseuses', 'Tablettes & Liseuses'),
+        ('photo_audio_video', 'Photo, audio & vidéo'),
+        ('telephones_objets_connectes', 'Téléphones & Objets connectés'),
+        ('accessoires_telephone', 'Accessoires téléphone & Objets connectés'),
+    ]
+
+    item = models.ForeignKey(Item, related_name='listings_lbc', on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
+    price = models.IntegerField()
+    description = models.TextField()
+    category = models.CharField(
+        max_length=50,
+        choices=CATEGORY_CHOICES,
+        default='ordinateurs'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)

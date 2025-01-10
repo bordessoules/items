@@ -3,11 +3,11 @@
         {% for attachment in attachments.all %}
             {% if attachment.is_image %}
                 <div class="relative group">
-                    <img src="{{ attachment.file.url }}"
-                         alt="{{ attachment.filename }}"
-                         class="w-full h-32 object-cover rounded cursor-pointer"
-                         hx-get="{% url 'inventory:image_preview' attachment.id %}?source_type={{ source_type }}&source_id={{ source_id }}"
-                         hx-target="#modal-container">
+                    <img src="{{ attachment.file.url }}" 
+                        alt="{{ attachment.filename }}"
+                        class="w-full h-32 object-cover rounded cursor-pointer"
+                        hx-get="{% url 'inventory:image_preview' attachment.id %}?source_type=item&source_id={{ item.id }}"
+                        hx-target="#modal-container">
                     <div class="text-xs truncate text-gray-500 mt-1">
                         {{ attachment.filename }}
                     </div>

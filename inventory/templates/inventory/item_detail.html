@@ -36,6 +36,27 @@
                 </div>
             </div>
 
+             <!-- Listing Generation Section -->
+             <div class="mb-6">
+                <h2 class="text-lg font-semibold mb-2">Générer une Annonce</h2>
+                <button 
+                    class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                    hx-post="{% url 'inventory:items-generate-listing' item.id %}"
+                    hx-target="#listing-result"
+                    hx-indicator="#listing-spinner">
+                    <span class="htmx-indicator" id="listing-spinner">
+                        Génération en cours...
+                    </span>
+                    <span class="htmx-indicator-none">
+                        Générer une Annonce LeBonCoin
+                    </span>
+                </button>
+                
+                <div id="listing-result" class="mt-4 bg-gray-50 p-4 rounded">
+                    <!-- The generated listing will appear here -->
+                </div>
+            </div>
+            
             <!--AI  item description -->
             <div class="mb-6">
                 <div class="flex justify-between items-center mb-2">

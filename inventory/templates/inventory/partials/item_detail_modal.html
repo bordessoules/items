@@ -54,6 +54,25 @@
                 </div>
             </div>
 
+            <div class="mb-6">
+                <h2 class="text-lg font-semibold mb-2">Générer une Annonce</h2>
+                <button 
+                    class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                    hx-post="{% url 'inventory:generate_listing' item.id %}"
+                    hx-target="#listing-result"
+                    hx-indicator="#listing-spinner">
+                    <span class="htmx-indicator" id="listing-spinner">
+                        Génération en cours...
+                    </span>
+                    <span class="htmx-indicator-none">
+                        Générer une Annonce LeBonCoin
+                    </span>
+                </button>
+                
+                <div id="listing-result" class="mt-4 bg-gray-50 p-4 rounded">
+                </div>
+            </div>
+
             <!-- Attachments -->
             {% if item.attachments.exists %}
             <div>

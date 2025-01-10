@@ -4,6 +4,7 @@ API viewsets for the inventory application.
 Provides REST endpoints for all models.
 """
 
+from inventory.services.text import TextService
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -12,10 +13,10 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from django.db import transaction
 from django.db.models import Count
 
-from .models import Item, QRCode, Label, Email, Attachment
+from .models import Item, QRCode, Label, Email, Attachment, ListingLBC
 from .serializers import (
     ItemSerializer, QRCodeSerializer, LabelSerializer,
-    EmailSerializer, AttachmentSerializer
+    EmailSerializer, AttachmentSerializer, ListingLBCSerializer
 )
 
 class ItemViewSet(viewsets.ModelViewSet):
@@ -27,6 +28,26 @@ class ItemViewSet(viewsets.ModelViewSet):
     ordering_fields = ['created_at', 'updated_at']
     ordering = ['-created_at']
 
+    @action(detail=True, methods=['post'])
+    def generate_listing(self, request, pk=None):
+        """Generate a listing suggestion for an item"""
+        item = self.get_object()
+        
+        # Gather all AI descriptions
+        descriptions = "\n".join([
+            desc.response for desc in item.item_ai_descriptions.all()
+        ])
+        
+        # Use TextService to generate listing
+        text_service = TextService()
+        listing_data = text_service.generate_listing(descriptions)
+        
+        if listing_data:
+            return Response(listing_data)
+        return Response(
+            {'error': 'Failed to generate listing'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
     @action(detail=True, methods=['post'])
     def add_qr_code(self, request, pk=None):
         """Add a new QR code to an item."""
@@ -199,3 +220,33 @@ class AttachmentViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter]
     search_fields = ['filename']
     filterset_fields = ['content_type']
+
+class ListingLBCViewSet(viewsets.ModelViewSet):
+    """API endpoint for LeBonCoin listings operations."""
+    queryset = ListingLBC.objects.all()
+    serializer_class = ListingLBCSerializer
+
+    @action(detail=False, methods=['post'])
+    def generate(self, request):
+        """Generate a listing suggestion from item description"""
+        item_id = request.data.get('item_id')
+        if not item_id:
+            return Response(
+                {'error': 'Item ID is required'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        item = Item.objects.get(id=item_id)
+        descriptions = "\n".join([
+            desc.response for desc in item.item_ai_descriptions.all()
+        ])
+
+        from .services.text import handle_listing_generation
+        listing_data = handle_listing_generation(descriptions)
+
+        if listing_data:
+            return Response(listing_data)
+        return Response(
+            {'error': 'Failed to generate listing'},
+            status=status.HTTP_400_BAD_REQUEST
+        )

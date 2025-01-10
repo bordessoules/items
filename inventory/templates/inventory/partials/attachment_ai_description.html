@@ -5,10 +5,10 @@
     <div class="text-center py-4">
         <button 
             class="px-2 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600"
-            hx-post="{% url 'inventory:refresh_ai_analysis' item.id %}"
-            hx-target="#ai-description-{{ item.id }}"
-            hx-indicator="#generate-spinner-{{ item.id }}">
-            <span class="htmx-indicator" id="generate-spinner-{{ item.id }}">⟳</span>
+            hx-post="{% url 'inventory:refresh_attachment_ai' attachment.id %}"
+            hx-target="#ai-description-{{ attachment.id }}"
+            hx-indicator="#generate-spinner-{{ attachment.id }}">
+            <span class="htmx-indicator" id="generate-spinner-{{ attachment.id }}">⟳</span>
             <span class="htmx-indicator-none">Generate AI</span>
         </button>
     </div>

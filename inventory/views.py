@@ -3,19 +3,19 @@ Views for the inventory management system.
 Includes both list and detail views with HTMX enhancements.
 """
 
+from logging import warning
 from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView, DetailView
 from django.views.decorators.http import require_http_methods
 from django.http import HttpResponse
-from django.db.models import Prefetch, Count
+from django.db.models import Prefetch, Count, Subquery, OuterRef
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Q
 from django.core.management import call_command
 from django.http import JsonResponse
-from logging import warning
 
-from .models import Item, Email, Attachment, Label, QRCode
+from .models import AIImgdescription, AIdescription, Item, Email, Attachment, Label
 
 # Base Views
 class BaseListView(ListView):
@@ -117,8 +117,9 @@ class ItemListView(BaseListView):
 
         # Add AI description display handling
         for item in context.get('object_list', []):
-            item.truncated_description = item.ai_aggregated_description[:150] if item.ai_aggregated_description else ''
-            item.needs_generation = not bool(item.ai_aggregated_description)
+            latest_ai_desc = item.item_ai_descriptions.order_by('-created_at').first()
+            item.truncated_description = latest_ai_desc.response[:150] if latest_ai_desc else ''
+            item.needs_generation = not bool(latest_ai_desc)
     
         return context
     
@@ -220,12 +221,61 @@ class ItemDetailView(BaseDetailView):
     partial_template_name = 'inventory/partials/item_detail_modal.html'
     context_object_name = 'item'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Get latest image descriptions
+        latest_descriptions = AIImgdescription.objects.filter(
+            attachment__item=self.object,
+            created_at=Subquery(
+                AIImgdescription.objects.filter(
+                    attachment=OuterRef('attachment')
+                ).order_by('-created_at').values('created_at')[:1]
+            )
+        )
+        context['latest_descriptions'] = {
+            desc.attachment_id: desc for desc in latest_descriptions
+        }
+        # Get latest text descriptions
+        latest_text_descriptions = AIdescription.objects.filter(
+            item=self.object,
+            created_at=Subquery(
+                AIdescription.objects.filter(
+                    item=OuterRef('item')
+                ).order_by('-created_at').values('created_at')[:1]
+            )
+        )
+        context['latest_text_descriptions'] = {
+            desc.item_id: desc for desc in latest_text_descriptions
+        }
+        return context
+
     def get_object(self):
         """Get item with related data prefetched."""
         return (Item.objects
                 .prefetch_related('labels', 'qr_codes', 
                                 'attachments', 'emails')
                 .get(pk=self.kwargs['pk']))
+    
+@require_http_methods(["POST"])
+def generate_listing(request, item_id):
+    """Handle POST request for listing generation"""
+    item = get_object_or_404(Item, pk=item_id)
+    descriptions = "\n".join([
+        desc.response for desc in item.item_ai_descriptions.all()
+    ])
+    
+    from .services.text import handle_listing_generation
+    listing_data = handle_listing_generation(descriptions)
+    
+    if listing_data:
+        return render(request, 'inventory/partials/generated_listing.html', {
+            'listing': listing_data,
+            'item': item
+        })
+    return HttpResponse(
+        "Échec de la génération de l'annonce", 
+        status=400
+        )
 
 # HTMX Handlers
 @require_http_methods(["GET"])
@@ -234,7 +284,8 @@ def image_preview(request, attachment_id):
     attachment = get_object_or_404(Attachment, pk=attachment_id)
     source_type = request.GET.get('source_type')
     source_id = request.GET.get('source_id')
-    
+    latest_ai_desc = attachment.attachment_ai_descriptions.order_by('-created_at').first()
+
     if source_type == 'email' and source_id:
         all_images = list(Attachment.objects.filter(
             email_id=source_id,
@@ -257,6 +308,7 @@ def image_preview(request, attachment_id):
     
     context = {
         'attachment': attachment,
+        'latest_description': latest_ai_desc,
         'prev_image': prev_image,
         'next_image': next_image,
         'source_type': source_type,
@@ -466,10 +518,11 @@ def refresh_ai_analysis(request, item_id):
     try:
         call_command('update_item_descriptions', str(item_id), force=True)
         item = get_object_or_404(Item, pk=item_id)
-        
-        # Return just the formatted description
+        latest_desc = item.item_ai_descriptions.order_by('-created_at').first()
+
         return render(request, 'inventory/partials/ai_description.html', {
-            'description': item.ai_aggregated_description
+            'description': latest_desc.response if latest_desc else '',
+            'item': item
         })
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
@@ -478,8 +531,7 @@ def refresh_ai_analysis(request, item_id):
 def refresh_attachment_ai(request, attachment_id):
     try:
         attachment = get_object_or_404(Attachment, pk=attachment_id)
-        response = attachment.query_vision_ai("pixtral-12b-2409", "Décris uniquement l'objet principal de cette image de manière factuelle (dimensions, couleurs, forme, matériau). Liste ensuite tous les textes et codes-barres visibles mot pour mot, sans interprétation. Ignore l'arrière-plan et toute personne présente dans l'image.")
-        
+        response = attachment.query_vision_ai("pixtral-12b-2409", "Décris uniquement...")
         return render(request, 'inventory/partials/attachment_ai_description.html', {
             'description': response,
             'attachment': attachment
@@ -499,5 +551,6 @@ def generate_image_description(request, attachment_id):
             'attachment': attachment
         })
     except Exception as e:
+        warning('error:' + str(e))
         return JsonResponse({'error': str(e)}, status=500)
 

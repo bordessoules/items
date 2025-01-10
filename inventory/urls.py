@@ -15,6 +15,7 @@ router.register(r'qrcodes', api_views.QRCodeViewSet)
 router.register(r'labels', api_views.LabelViewSet)
 router.register(r'emails', api_views.EmailViewSet)
 router.register(r'attachments', api_views.AttachmentViewSet)
+router.register(r'listings', api_views.ListingLBCViewSet)
 
 # Combine API routes with frontend routes
 urlpatterns = router.urls + frontend_urls.urlpatterns

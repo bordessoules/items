@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Item, QRCode, Label, Email, Attachment
+from .models import Item, ListingLBC, QRCode, Label, Email, Attachment
 
 class AttachmentSerializer(serializers.ModelSerializer):
     download_url = serializers.SerializerMethodField()
@@ -107,3 +107,8 @@ class ItemSerializer(serializers.ModelSerializer):
             )
         
         return instance
+
+class ListingLBCSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ListingLBC
+        fields = ['id', 'item', 'title', 'price', 'description', 'category']
